@@ -1,6 +1,6 @@
 [project]
 name = "py-yfinance"
-version = "0.1.0"
+version = "0.1.1"
 description = "A structured Python interface for retrieving and validating market data using yfinance"
 readme = "README.md"
 requires-python = ">=3.10"
