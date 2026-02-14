@@ -1,9 +1,9 @@
 [project]
 name = "py-yfinance"
-version = "0.1.1"
+version = "0.1.2"
 description = "A structured Python interface for retrieving and validating market data using yfinance"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.9"
 authors = [
     { name = "Roman Medvedev", email = "pypi@romavm.dev" }
 ]
@@ -13,6 +13,7 @@ classifiers = [
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
@@ -21,8 +22,8 @@ classifiers = [
 ]
 dependencies = [
     "pycountry>=24.6.1",
-    "pydantic-market-data>=0.1.0",
-    "yfinance>=1.0",
+    "pydantic-market-data>=0.1.8",
+    "yfinance>=1.1.0",
 ]
 
 [project.urls]
@@ -38,7 +39,7 @@ dev-dependencies = [
 
 [tool.ruff]
 line-length = 100
-target-version = "py310"
+target-version = "py39"
 
 [tool.ruff.lint]
 select = ["E", "F", "I"]
@@ -54,5 +55,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["py_yfinance"]
+packages = ["src/py_yfinance"]
+
+
 
