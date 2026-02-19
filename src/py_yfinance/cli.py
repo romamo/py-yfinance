@@ -90,7 +90,11 @@ def main():
     p_lookup.set_defaults(func=lookup)
 
     # history command
-    p_history = subparsers.add_parser("history", parents=[parent_parser], help="Get historical data")
+    p_history = subparsers.add_parser(
+        "history", 
+        parents=[parent_parser], 
+        help="Get historical data"
+    )
     p_history.add_argument("ticker", help="Ticker symbol")
     p_history.add_argument("--period", default="1mo", help="Period (e.g. 1d, 5d, 1mo, 1y)")
     p_history.set_defaults(func=history)
