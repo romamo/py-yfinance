@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.1.6] - 2026-02-19
+
+### Fixed
+- **Release**: Re-release of v0.1.5 fixes due to PyPI upload conflict.
+
 ## [0.1.5] - 2026-02-19
 
 ### Fixed
