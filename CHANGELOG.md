@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.1.5] - 2026-02-19
+
+### Fixed
+- **Linting**: Fixed various lint errors (bare exceptions, line lengths) identified by `ruff`.
+
 ## [0.1.4] - 2026-02-19
 
 ### Fixed

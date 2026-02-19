@@ -1,6 +1,6 @@
 [project]
 name = "py-yfinance"
-version = "0.1.4"
+version = "0.1.5"
 description = "A structured Python interface for retrieving and validating market data using yfinance"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -22,7 +22,7 @@ classifiers = [
 ]
 dependencies = [
     "pycountry>=26.2.16",
-    "pydantic-market-data==0.1.9",
+    "pydantic-market-data>=0.1.10",
     "yfinance>=1.2.0",
 ]
 

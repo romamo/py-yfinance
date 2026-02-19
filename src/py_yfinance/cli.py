@@ -1,10 +1,11 @@
 import argparse
-import sys
 import logging
-from typing import List, Optional
+import sys
 
 from pydantic_market_data.models import SecurityCriteria
+
 from py_yfinance.source import YFinanceDataSource
+
 
 def setup_logging(verbose: int):
     level = logging.WARNING

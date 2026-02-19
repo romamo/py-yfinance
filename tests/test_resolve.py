@@ -16,7 +16,14 @@ class TestYFinanceResolve(unittest.TestCase):
         """Test resolving a symbol that exists directly."""
         # Setup mock Search
         mock_search_instance = MagicMock()
-        mock_search_instance.quotes = [{"symbol": "AAPL", "shortname": "Apple Inc.", "exchange": "NASDAQ", "country": "United States"}]
+        mock_search_instance.quotes = [
+            {
+                "symbol": "AAPL", 
+                "shortname": "Apple Inc.", 
+                "exchange": "NASDAQ", 
+                "country": "United States"
+            }
+        ]
         mock_search.return_value = mock_search_instance
 
         # Setup mock Ticker

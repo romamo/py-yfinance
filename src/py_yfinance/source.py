@@ -1,11 +1,11 @@
-from typing import List, Optional, Union, Iterator, Any
 from datetime import date, datetime, timedelta
+from typing import Any, Iterator, List, Optional
 
 import pycountry
 import yfinance as yf
-from yfinance import Search
 from pydantic_market_data.interfaces import DataSource
 from pydantic_market_data.models import OHLCV, History, HistoryPeriod, SecurityCriteria, Symbol
+from yfinance import Search
 
 
 class YFinanceDataSource(DataSource):
@@ -26,22 +26,20 @@ class YFinanceDataSource(DataSource):
         if len(country_name) == 2 and country_name.isupper():
             return country_name
 
+        # Look up by name
+        c = pycountry.countries.get(name=country_name)
+        if c:
+            return c.alpha_2
+        
+        # Fuzzy / common mappings if pycountry fails
+        # yfinance sometimes uses "United States" which pycountry handles, 
+        # but maybe "USA"?
         try:
-            # Look up by name
-            c = pycountry.countries.get(name=country_name)
-            if c:
-                return c.alpha_2
-            
-            # Fuzzy / common mappings if pycountry fails
-            # yfinance sometimes uses "United States" which pycountry handles, 
-            # but maybe "USA"?
             c = pycountry.countries.lookup(country_name)
             if c:
                 return c.alpha_2
         except LookupError:
             pass
-        
-        return None
 
 
     def search(self, query: str) -> List[Symbol]:
@@ -232,7 +230,13 @@ class YFinanceDataSource(DataSource):
         start_date = end_date - timedelta(days=5) # 5 days to cover weekends
         
         # Explicit interval="1d" and auto_adjust=False ensures a single, fast request
-        hist = t.history(start=start_date.isoformat(), end=end_date.isoformat(), interval="1d", auto_adjust=False, actions=False)
+        hist = t.history(
+            start=start_date.isoformat(), 
+            end=end_date.isoformat(), 
+            interval="1d", 
+            auto_adjust=False, 
+            actions=False
+        )
         if not hist.empty:
              return float(hist.iloc[-1]["Close"])
              
@@ -240,7 +244,7 @@ class YFinanceDataSource(DataSource):
         try:
             if t.fast_info and t.fast_info.last_price is not None:
                  return float(t.fast_info.last_price)
-        except:
+        except Exception:
             pass
         
         return 0.0
