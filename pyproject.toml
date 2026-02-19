@@ -1,6 +1,6 @@
 [project]
 name = "py-yfinance"
-version = "0.1.3"
+version = "0.1.4"
 description = "A structured Python interface for retrieving and validating market data using yfinance"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -21,9 +21,9 @@ classifiers = [
     "Programming Language :: Python :: 3.14",
 ]
 dependencies = [
-    "pycountry>=24.6.1",
-    "pydantic-market-data>=0.1.8",
-    "yfinance>=1.1.0",
+    "pycountry>=26.2.16",
+    "pydantic-market-data==0.1.9",
+    "yfinance>=1.2.0",
 ]
 
 [project.urls]
@@ -44,11 +44,8 @@ target-version = "py310"
 [tool.ruff.lint]
 select = ["E", "F", "I"]
 
-[project.optional-dependencies]
-cli = ["typer"]
-
 [project.scripts]
-py-yfinance = "py_yfinance.cli:app"
+py-yfinance = "py_yfinance.cli:main"
 
 [build-system]
 requires = ["hatchling"]

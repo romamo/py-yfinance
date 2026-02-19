@@ -8,19 +8,15 @@ Implements the `DataSource` protocol from `pydantic-market-data` to provide type
 - **Protocol-Oriented**: Implements `DataSource` interface.
 - **Security Resolution**: Resolve ISINs and Symbols to valid `yfinance` tickers.
 - **Validation**:
-  - **Exchanges**: Map exchanges (e.g., `IBIS`, `AEB`) to Yahoo suffixes (`.DE`, `.AS`).
-  - **Price Validation**: Verify tickers against a known target price with **strict 1% tolerance**.
+  - **Price Validation**: Verify tickers against daily high/low range.
   - **Date Validation**: Validate prices on specific historical dates.
-- **Typer CLI**: Optional command-line interface for lookup and history.
+- **CLI**: Optional command-line interface for lookup and history.
 
 ## Installation
 
 ```bash
 # Basic installation
 uv pip install py-yfinance
-
-# With CLI support
-uv pip install "py-yfinance[cli]"
 ```
 
 ## Usage
@@ -34,7 +30,7 @@ from pydantic_market_data.models import SecurityCriteria
 source = YFinanceDataSource()
 
 # 1. Simple Lookup by Symbol
-criteria = SecurityCriteria(symbol="AAPL", preferred_exchanges=["NASDAQ"])
+criteria = SecurityCriteria(symbol="AAPL")
 result = source.resolve(criteria)
 print(result)
 # Symbol(ticker='AAPL', name='Apple Inc.', exchange='NMS', currency='USD', ...)
@@ -44,7 +40,7 @@ print(result)
 criteria = SecurityCriteria(
     isin="NL0010273215",
     target_date="2025-12-15",
-    target_price=923.4  # Validates against history with 1% tolerance
+    target_price=923.4  # Validates against history
 )
 match = source.resolve(criteria)
 if match:
@@ -55,7 +51,6 @@ else:
 
 ### CLI Usage
 
-Requires `[cli]` extra.
 
 #### Lookup
 Resolve a security by Symbol or ISIN.

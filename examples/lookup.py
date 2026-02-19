@@ -13,7 +13,7 @@ def main():
     parser.add_argument("--isin", type=str, help="ISIN of the security")
     parser.add_argument("--symbol", type=str, help="Symbol")
     parser.add_argument("--desc", type=str, help="Description")
-    parser.add_argument("--exchange", type=str, help="Preferred exchange")
+    parser.add_argument("--exchange", type=str, help="Exchange")
 
     # Validation params
     parser.add_argument("--price", type=float, help="Validation price")
@@ -21,17 +21,15 @@ def main():
 
     args = parser.parse_args()
 
-    preferred = [args.exchange] if args.exchange else None
-
     source = YFinanceDataSource()
 
     criteria = SecurityCriteria(
         isin=args.isin,
         symbol=args.symbol,
         description=args.desc,
-        preferred_exchanges=preferred,
         target_price=args.price,
         target_date=args.date,
+        # exchange=args.exchange  TODO: since 0.1.10
     )
 
     try:

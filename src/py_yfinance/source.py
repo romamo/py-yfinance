@@ -1,5 +1,5 @@
 from typing import List, Optional, Union, Iterator, Any
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 
 import pycountry
 import yfinance as yf
@@ -114,155 +114,84 @@ class YFinanceDataSource(DataSource):
         candidates = self._generate_candidates(criteria)
 
         seen = set()
-        best_match = None
-        min_diff = float("inf")
 
-        for candidate_ticker in candidates:
-            if candidate_ticker in seen:
+        for candidate in candidates:
+            # candidate is now a dict with metadata
+            ticker = candidate.get("symbol")
+            if not ticker or ticker in seen:
                 continue
-            seen.add(candidate_ticker)
+            seen.add(ticker)
 
-            data = self._validate_candidate_data(candidate_ticker, criteria.target_date, criteria.target_price)
+            data = self._validate_candidate_data(ticker, criteria.target_date, criteria.target_price)
             if not data:
                 continue
             
-            current_price, currency, info = data
+            # _validate_candidate_data now returns (price, currency) only
+            current_price, currency = data
 
+            # Use metadata from Search result (candidate)
+            name = candidate.get("shortname") or candidate.get("longname") or "Unknown"
+            exchange = candidate.get("exchange")
+            country = self._map_country(candidate.get("country"))
+            asset_class = candidate.get("quoteType") or candidate.get("typeDisp")
+            
             return Symbol(
-                ticker=info.get("symbol", candidate_ticker),
-                name=info.get("longName", info.get("shortName", "Unknown")),
-                exchange=info.get("exchange"),
-                country=self._map_country(info.get("country")),
+                ticker=ticker,
+                name=name,
+                exchange=exchange,
+                country=country,
                 currency=currency,
+                asset_class=asset_class,
             )
 
-    def _generate_candidates(self, criteria: SecurityCriteria) -> Iterator[str]:
+    def _generate_candidates(self, criteria: SecurityCriteria) -> Iterator[dict]:
+        """
+        Yields dictionaries containing metadata from yfinance.Search.
+        """
         if criteria.symbol:
             s = Search(criteria.symbol, max_results=100, news_count=0, lists_count=0)
             for q in s.quotes:
                 symbol = q.get("symbol")
                 if symbol and symbol.startswith(criteria.symbol):
-                    yield symbol
-            # suffixes = self._get_suffixes(criteria.preferred_exchanges)
-            # for suffix in suffixes:
-            #     yield f"{criteria.symbol}{suffix}"
+                    yield q
 
         if criteria.isin:
-            s = Search(criteria.isin)
+            s = Search(criteria.isin, max_results=100, news_count=0, lists_count=0)
             for q in s.quotes:
                 symbol = q.get("symbol")
                 if symbol and not symbol.startswith(criteria.isin):
-                    yield symbol
+                    yield q
 
-    def _validate_candidate_data(self, ticker: str, target_date: Optional[date], target_price: Optional[float] = None) -> Optional[tuple]:
-        try:
-            t = yf.Ticker(ticker)
-        except ValueError:
-            return None
-        current_price = 0.0
-        currency = "USD"
-        info = {}
+    def _validate_candidate_data(self, ticker: str, target_date: Optional[date] = None, target_price: Optional[float] = None) -> Optional[tuple]:
+        """
+        Validates ticker data and returns (price, currency).
+        """
+        t = yf.Ticker(ticker)
 
-        # 1. Date Validation (if requested)
         if target_date:
-            from datetime import datetime, timedelta
-            if isinstance(target_date, str):
-                dt_start = datetime.fromisoformat(target_date)
-            else:
-                dt_start = datetime.combine(target_date, datetime.min.time())
-            
-            # Fetch a small window around the target date to ensure we get data
-            # Market might be closed on exact date, so we take the next available
-            dt_end = dt_start + timedelta(days=1)
-            start_str = dt_start.strftime("%Y-%m-%d")
-            end_str = dt_end.strftime("%Y-%m-%d")
-
-            hist_date = t.history(start=start_str, end=end_str)
-            if not hist_date.empty:
-                # We found data. 
-                # If target_price is provided, we can do a "Range Match" on the first available record
-                # This is more robust than just checking Close because intraday volatility might have hit the price
-                
-                row = hist_date.iloc[0]
-                current_price = float(row["Close"])
-                
-                # Try validation against High/Low if price provided
-                if target_price and target_price > 0:
-                     low = float(row["Low"])
-                     high = float(row["High"])
-                     
-                     # Check currency mismatch potential (GBp vs GBP)
-                     # If target is 150 and price is 1.5, or target 1.5 and price 150.
-                     # We handle basic scaling validation in resolve(), but here we can return the *best* matching price from the range 
-                     # to avoid immediate rejection if Close didn't match but Low/High did.
-                     
-                     # Simple logic: If target price is within Low-High, using that as current_price 
-                     # effectively says "Yes, this price was reached on this day".
-                     if not low <= target_price <= high:
-                         return None
-                         
-                currency = t.info.get('currency', 'USD')
-                info = t.info 
-            else:
-                return None
-        
+            hist = t.history(start=target_date.strftime("%Y-%m-%d"),
+                             end=(target_date + timedelta(days=1)).strftime("%Y-%m-%d"))
         else:
-            # 2. Basic Validation (5d history) - Only if no target date
             hist = t.history(period="5d")
-            if not hist.empty:
-                current_price = float(hist.iloc[-1]["Close"])
-                currency = t.history_metadata.get("currency", t.info.get("currency", "USD"))
-                info = t.info
-            else:
-                pass
 
+        if hist.empty:
+            return None
+
+        row = hist.iloc[0]
+
+        if target_price:
+            if not float(row["Low"]) <= target_price <= float(row["High"]):
+                return None
+
+        current_price = float(row["Close"])
+                
         if current_price == 0.0:
             return None
-            
-        return current_price, currency, info
 
-    def _get_suffixes(self, exchanges: Optional[List[str]]) -> List[str]:
-        if not exchanges:
-            return []
+        currency = t._price_history._history_metadata.get('currency')
 
-        mapping = {
-            "IBIS": ".DE",
-            "IBIS2": ".DE",
-            "GER": ".DE",
-            "XETRA": ".DE",
-            "AEB": ".AS",
-            "AMS": ".AS",
-            "LSE": ".L",
-            "LSEETF": ".L",
-            "EUDARK": ".L",
-            "PA": ".PA",
-            "PAR": ".PA",
-            "MIL": ".MI",
-            "EBS": ".SW",  # SIX Swiss Exchange often maps to .SW? Or maybe it's EBS FX?
-            # Actually EBS in IBKR often means Swiss for stocks/ETFs.
-            # But for crypto/some ETFs it could be different.
-            # Stuttgart? usually .SG or .ST? Yahoo uses .SG sometimes or just .DE (Xetra/Regional).
-            "SWB": ".SG",
-            "SWB2": ".SG",
-            # Gettex often shares pricing with Xetra or uses .DE or .MU (Munich)?
-            "GETTEX": ".DE",
-            "GETTEX2": ".DE",
-            "NASDAQ": "",
-            "NYSE": "",
-            "AMEX": "",
-        }
+        return current_price, currency
 
-        suffixes = []
-        for ex in exchanges:
-            # clean exchange string logic if needed
-            ex_upper = ex.upper()
-            if ex_upper in mapping:
-                s = mapping[ex_upper]
-                if s not in suffixes:
-                    suffixes.append(s)
-
-        # Add generic checks if needed? No, stick to explicit for now.
-        return suffixes
 
     def history(self, ticker: str, period: HistoryPeriod = HistoryPeriod.MO1) -> History:
         """
@@ -292,19 +221,28 @@ class YFinanceDataSource(DataSource):
 
     def get_price(self, ticker: str) -> float:
         """
-        Get the current price (fast_info).
+        Get the current price using a single efficient history call.
         """
+        t = yf.Ticker(ticker)
+        
+        # Using a small date window with explicit interval="1d" is the most robust 
+        # way to get the last price in a single request across yfinance versions.
+        from datetime import date, timedelta
+        end_date = date.today() + timedelta(days=1)
+        start_date = end_date - timedelta(days=5) # 5 days to cover weekends
+        
+        # Explicit interval="1d" and auto_adjust=False ensures a single, fast request
+        hist = t.history(start=start_date.isoformat(), end=end_date.isoformat(), interval="1d", auto_adjust=False, actions=False)
+        if not hist.empty:
+             return float(hist.iloc[-1]["Close"])
+             
+        # Fallback to fast_info only if history failed
         try:
-            t = yf.Ticker(ticker)
             if t.fast_info and t.fast_info.last_price is not None:
-                return float(t.fast_info.last_price)
-
-            # Fallback to history
-            hist = t.history(period="1d")
-            if not hist.empty:
-                return float(hist.iloc[-1]["Close"])
-        except Exception:
+                 return float(t.fast_info.last_price)
+        except:
             pass
+        
         return 0.0
 
     def validate(self, ticker: str, target_date: Any, target_price: float) -> bool:

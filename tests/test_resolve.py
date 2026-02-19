@@ -10,16 +10,29 @@ class TestYFinanceResolve(unittest.TestCase):
     def setUp(self):
         self.source = YFinanceDataSource()
 
+    @patch("py_yfinance.source.Search")
     @patch("yfinance.Ticker")
-    def test_resolve_exact_symbol(self, mock_ticker):
+    def test_resolve_exact_symbol(self, mock_ticker, mock_search):
         """Test resolving a symbol that exists directly."""
-        # Setup mock
+        # Setup mock Search
+        mock_search_instance = MagicMock()
+        mock_search_instance.quotes = [{"symbol": "AAPL", "shortname": "Apple Inc.", "exchange": "NASDAQ", "country": "United States"}]
+        mock_search.return_value = mock_search_instance
+
+        # Setup mock Ticker
         mock_instance = MagicMock()
-        # fast_info must be an object with attributes, not a dict
-        mock_fast_info = MagicMock()
-        mock_fast_info.last_price = 150.0
-        mock_fast_info.currency = "USD"
-        mock_instance.fast_info = mock_fast_info
+        
+        # Mock history for validation
+        mock_hist = MagicMock()
+        mock_hist.empty = False
+        mock_hist.iloc = MagicMock()
+        mock_hist.iloc.__getitem__.return_value = {"Close": 150.0}
+        mock_instance.history.return_value = mock_hist
+        
+        # Mock history_metadata via internal _price_history
+        mock_price_history = MagicMock()
+        mock_price_history._history_metadata = {"currency": "USD"}
+        mock_instance._price_history = mock_price_history
 
         mock_instance.info = {
             "symbol": "AAPL",
@@ -40,44 +53,18 @@ class TestYFinanceResolve(unittest.TestCase):
         # Ensure Ticker was called with "AAPL"
         mock_ticker.assert_called_with("AAPL")
 
+
+
+    @patch("py_yfinance.source.Search")
     @patch("yfinance.Ticker")
-    def test_resolve_with_suffix(self, mock_ticker):
-        """Test resolving a symbol that needs a suffix appended."""
-
-        def ticker_side_effect(ticker_str):
-            mock = MagicMock()
-            if ticker_str == "ABC":
-                mock.fast_info = MagicMock()
-                mock.fast_info.last_price = None  # Invalid
-            elif ticker_str == "ABC.DE":
-                mock_fast_info = MagicMock()
-                mock_fast_info.last_price = 50.0
-                mock_fast_info.currency = "EUR"
-                mock.fast_info = mock_fast_info
-
-                mock.info = {
-                    "symbol": "ABC.DE",
-                    "longName": "ABC German Corp",
-                    "exchange": "GER",
-                    "country": "Germany",
-                    "currency": "EUR",
-                }
-            else:
-                mock.fast_info = MagicMock()
-                mock.fast_info.last_price = None
-            return mock
-
-        mock_ticker.side_effect = ticker_side_effect
-
-        criteria = SecurityCriteria(symbol="ABC", preferred_exchanges=["IBIS"])  # IBIS maps to .DE
-        result = self.source.resolve(criteria)
-
-        self.assertIsNotNone(result)
-        self.assertEqual(result.ticker, "ABC.DE")
-
-    @patch("yfinance.Ticker")
-    def test_resolve_not_found(self, mock_ticker):
+    def test_resolve_not_found(self, mock_ticker, mock_search):
         """Test resolving a symbol that doesn't exist."""
+        # Setup mock Search
+        mock_search_instance = MagicMock()
+        mock_search_instance.quotes = []
+        mock_search.return_value = mock_search_instance
+
+        # Setup mock Ticker
         mock_instance = MagicMock()
         mock_fast_info = MagicMock()
         mock_fast_info.last_price = None

@@ -17,7 +17,7 @@ def main():
     print("-" * 90)
 
     for s in scenarios:
-        criteria = SecurityCriteria(symbol=s["symbol"], preferred_exchanges=s.get("exchanges"))
+        criteria = SecurityCriteria(symbol=s["symbol"])
         result = source.resolve(criteria)
 
         input_str = s["symbol"]
