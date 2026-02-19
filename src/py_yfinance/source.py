@@ -76,8 +76,8 @@ class YFinanceDataSource(DataSource):
         """
         Lookup securities using yfinance.Lookup.
         """
-        l = yf.Lookup(query)
-        df = l.get_all()
+        lookup = yf.Lookup(query)
+        df = lookup.get_all()
 
         if df.empty:
             return []
@@ -120,7 +120,9 @@ class YFinanceDataSource(DataSource):
                 continue
             seen.add(ticker)
 
-            data = self._validate_candidate_data(ticker, criteria.target_date, criteria.target_price)
+            data = self._validate_candidate_data(
+                ticker, criteria.target_date, criteria.target_price
+            )
             if not data:
                 continue
             
@@ -160,7 +162,12 @@ class YFinanceDataSource(DataSource):
                 if symbol and not symbol.startswith(criteria.isin):
                     yield q
 
-    def _validate_candidate_data(self, ticker: str, target_date: Optional[date] = None, target_price: Optional[float] = None) -> Optional[tuple]:
+    def _validate_candidate_data(
+        self, 
+        ticker: str, 
+        target_date: Optional[date] = None, 
+        target_price: Optional[float] = None
+    ) -> Optional[tuple]:
         """
         Validates ticker data and returns (price, currency).
         """
