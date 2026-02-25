@@ -45,7 +45,7 @@ class TestYFinanceDataSourceCoverage(unittest.TestCase):
             {"symbol": "MSFT", "longname": "Microsoft", "exchange": "NMS"},
         ]
         mock_search.return_value = mock_instance
-        
+
         results = self.source.search("Apple")
         self.assertEqual(len(results), 2)
         self.assertEqual(results[0].ticker.root, "AAPL")
@@ -59,11 +59,11 @@ class TestYFinanceDataSourceCoverage(unittest.TestCase):
     def test_search_missing_fields(self, mock_search):
         mock_instance = MagicMock()
         mock_instance.quotes = [
-            {"symbol": "AAPL"}, # Missing name, exchange, etc.
-            {"shortname": "No Symbol"} # Missing symbol
+            {"symbol": "AAPL"},  # Missing name, exchange, etc.
+            {"shortname": "No Symbol"},  # Missing symbol
         ]
         mock_search.return_value = mock_instance
-        
+
         results = self.source.search("Apple")
         self.assertEqual(len(results), 1)
         self.assertEqual(results[0].ticker.root, "AAPL")
@@ -72,13 +72,16 @@ class TestYFinanceDataSourceCoverage(unittest.TestCase):
     @patch("yfinance.Lookup")
     def test_lookup_success(self, mock_lookup):
         mock_instance = MagicMock()
-        df = pd.DataFrame([
-            {"shortName": "Apple Inc.", "exchange": "NMS"},
-            {"shortName": "Microsoft", "exchange": "NMS"}
-        ], index=["AAPL", "MSFT"])
+        df = pd.DataFrame(
+            [
+                {"shortName": "Apple Inc.", "exchange": "NMS"},
+                {"shortName": "Microsoft", "exchange": "NMS"},
+            ],
+            index=["AAPL", "MSFT"],
+        )
         mock_instance.get_all.return_value = df
         mock_lookup.return_value = mock_instance
-        
+
         results = self.source.lookup("Apple")
         self.assertEqual(len(results), 2)
         self.assertEqual(results[0].ticker.root, "AAPL")
@@ -89,21 +92,28 @@ class TestYFinanceDataSourceCoverage(unittest.TestCase):
         mock_instance = MagicMock()
         mock_instance.get_all.return_value = pd.DataFrame()
         mock_lookup.return_value = mock_instance
-        
+
         results = self.source.lookup("Empty")
         self.assertEqual(len(results), 0)
 
     @patch("py_yfinance.source.YFinanceDataSource._validate_candidate_data")
     @patch("py_yfinance.source.YFinanceDataSource._generate_candidates")
     def test_resolve_success(self, mock_gen, mock_val):
-        mock_gen.return_value = iter([
-            {"symbol": "AAPL", "shortname": "Apple Inc.", "exchange": "NMS", "quoteType": "EQUITY"}
-        ])
+        mock_gen.return_value = iter(
+            [
+                {
+                    "symbol": "AAPL",
+                    "shortname": "Apple Inc.",
+                    "exchange": "NMS",
+                    "quoteType": "EQUITY",
+                }
+            ]
+        )
         mock_val.return_value = ValidatedCandidate(price=Price(150.0), currency=Currency("USD"))
-        
+
         criteria = SecurityCriteria(symbol="AAPL")
         result = self.source.resolve(criteria)
-        
+
         self.assertIsNotNone(result)
         self.assertEqual(result.ticker.root, "AAPL")
         self.assertEqual(result.price.root, 150.0)
@@ -112,10 +122,8 @@ class TestYFinanceDataSourceCoverage(unittest.TestCase):
     @patch("py_yfinance.source.YFinanceDataSource._validate_candidate_data")
     @patch("py_yfinance.source.YFinanceDataSource._generate_candidates")
     def test_resolve_exchange_mismatch(self, mock_gen, mock_val):
-        mock_gen.return_value = iter([
-            {"symbol": "AAPL", "exchange": "Frankfurt"}
-        ])
-        
+        mock_gen.return_value = iter([{"symbol": "AAPL", "exchange": "Frankfurt"}])
+
         criteria = SecurityCriteria(symbol="AAPL", exchange="NASDAQ")
         result = self.source.resolve(criteria)
         self.assertIsNone(result)
@@ -125,7 +133,7 @@ class TestYFinanceDataSourceCoverage(unittest.TestCase):
         mock_instance = MagicMock()
         mock_instance.quotes = [{"symbol": "AAPL"}]
         mock_search.return_value = mock_instance
-        
+
         candidates = list(self.source._generate_candidates(SecurityCriteria(isin="US0378331005")))
         self.assertEqual(len(candidates), 1)
         self.assertEqual(candidates[0]["symbol"], "AAPL")
@@ -137,12 +145,12 @@ class TestYFinanceDataSourceCoverage(unittest.TestCase):
         mock_hist.empty = False
         mock_hist.iloc = [{"Low": 140.0, "High": 160.0, "Close": 150.0}]
         mock_ticker.history.return_value = pd.DataFrame(mock_hist.iloc)
-        
+
         mock_price_history = MagicMock()
         mock_price_history._history_metadata = {"currency": "USD"}
         mock_ticker._price_history = mock_price_history
         mock_ticker_class.return_value = mock_ticker
-        
+
         res = self.source._validate_candidate_data(
             "AAPL", target_date=date(2023, 1, 1), target_price=155.0
         )
@@ -158,19 +166,20 @@ class TestYFinanceDataSourceCoverage(unittest.TestCase):
         mock_hist.iloc = [{"Low": 140.0, "High": 160.0, "Close": 150.0}]
         mock_ticker.history.return_value = pd.DataFrame(mock_hist.iloc)
         mock_ticker_class.return_value = mock_ticker
-        
+
         with self.assertRaises(PriceVerificationError):
             self.source._validate_candidate_data("AAPL", target_price=200.0)
 
     @patch("yfinance.Ticker")
     def test_history_success(self, mock_ticker_class):
         mock_ticker = MagicMock()
-        df = pd.DataFrame([
-            {"Open": 100.0, "High": 110.0, "Low": 90.0, "Close": 105.0, "Volume": 1000}
-        ], index=[date(2023, 1, 1)])
+        df = pd.DataFrame(
+            [{"Open": 100.0, "High": 110.0, "Low": 90.0, "Close": 105.0, "Volume": 1000}],
+            index=[date(2023, 1, 1)],
+        )
         mock_ticker.history.return_value = df
         mock_ticker_class.return_value = mock_ticker
-        
+
         hist = self.source.history("AAPL", period=HistoryPeriod.D1)
         self.assertEqual(len(hist.candles), 1)
         self.assertEqual(hist.candles[0].close, 105.0)
@@ -181,19 +190,19 @@ class TestYFinanceDataSourceCoverage(unittest.TestCase):
         df = pd.DataFrame([{"Close": 150.0}], index=[date(2023, 1, 1)])
         mock_ticker.history.return_value = df
         mock_ticker_class.return_value = mock_ticker
-        
+
         price = self.source.get_price("AAPL")
         self.assertEqual(price.root, 150.0)
 
     @patch("yfinance.Ticker")
     def test_get_price_fast_info_fallback(self, mock_ticker_class):
         mock_ticker = MagicMock()
-        mock_ticker.history.return_value = pd.DataFrame() # Empty history
+        mock_ticker.history.return_value = pd.DataFrame()  # Empty history
         mock_fast_info = MagicMock()
         mock_fast_info.last_price = 155.0
         mock_ticker.fast_info = mock_fast_info
         mock_ticker_class.return_value = mock_ticker
-        
+
         price = self.source.get_price("AAPL")
         self.assertEqual(price.root, 155.0)
 
@@ -203,7 +212,7 @@ class TestYFinanceDataSourceCoverage(unittest.TestCase):
         mock_ticker.history.return_value = pd.DataFrame()
         mock_ticker.fast_info = None
         mock_ticker_class.return_value = mock_ticker
-        
+
         with self.assertRaises(RuntimeError):
             self.source.get_price("AAPL")
 
@@ -212,7 +221,7 @@ class TestYFinanceDataSourceCoverage(unittest.TestCase):
             mock_val.return_value = ValidatedCandidate(price=Price(100), currency=Currency("USD"))
             res = self.source.validate("AAPL", date.today(), 100)
             self.assertTrue(res)
-            
+
             mock_val.return_value = None
             res = self.source.validate("AAPL", date.today(), 100)
             self.assertFalse(res)
@@ -220,9 +229,9 @@ class TestYFinanceDataSourceCoverage(unittest.TestCase):
     @patch("yfinance.Ticker")
     def test_validate_candidate_data_empty_history(self, mock_ticker_class):
         mock_ticker = MagicMock()
-        mock_ticker.history.return_value = pd.DataFrame() # Empty
+        mock_ticker.history.return_value = pd.DataFrame()  # Empty
         mock_ticker_class.return_value = mock_ticker
-        
+
         res = self.source._validate_candidate_data("AAPL")
         self.assertIsNone(res)
 
@@ -234,7 +243,7 @@ class TestYFinanceDataSourceCoverage(unittest.TestCase):
         mock_hist.iloc = [{"Low": 0.0, "High": 0.0, "Close": 0.0}]
         mock_ticker.history.return_value = pd.DataFrame(mock_hist.iloc)
         mock_ticker_class.return_value = mock_ticker
-        
+
         res = self.source._validate_candidate_data("AAPL")
         self.assertIsNone(res)
 
@@ -242,18 +251,20 @@ class TestYFinanceDataSourceCoverage(unittest.TestCase):
     @patch("py_yfinance.source.YFinanceDataSource._generate_candidates")
     def test_resolve_seen_filtering(self, mock_gen, mock_val):
         # Return same ticker twice
-        mock_gen.return_value = iter([
-            {"symbol": "AAPL", "exchange": "NMS"},
-            {"symbol": "AAPL", "exchange": "NMS"},
-            {"symbol": "MSFT", "exchange": "NMS"}
-        ])
+        mock_gen.return_value = iter(
+            [
+                {"symbol": "AAPL", "exchange": "NMS"},
+                {"symbol": "AAPL", "exchange": "NMS"},
+                {"symbol": "MSFT", "exchange": "NMS"},
+            ]
+        )
         # First call returns None (fails validation), second call should be skipped via 'seen',
         # third call returns valid data.
         mock_val.side_effect = [
             None,
-            ValidatedCandidate(price=Price(150.0), currency=Currency("USD"))
+            ValidatedCandidate(price=Price(150.0), currency=Currency("USD")),
         ]
-        
+
         criteria = SecurityCriteria(symbol="AAPL")
         result = self.source.resolve(criteria)
         self.assertIsNotNone(result)
@@ -267,23 +278,27 @@ class TestYFinanceDataSourceCoverage(unittest.TestCase):
     def test_resolve_no_data(self, mock_gen, mock_val):
         mock_gen.return_value = iter([{"symbol": "AAPL"}])
         mock_val.return_value = None
-        
+
         result = self.source.resolve(SecurityCriteria(symbol="AAPL"))
         self.assertIsNone(result)
 
     @patch("yfinance.Lookup")
     def test_lookup_missing_metadata(self, mock_lookup):
         mock_instance = MagicMock()
-        df = pd.DataFrame([
-            {"shortName": None, "exchange": None},
-        ], index=["AAPL"])
+        df = pd.DataFrame(
+            [
+                {"shortName": None, "exchange": None},
+            ],
+            index=["AAPL"],
+        )
         mock_instance.get_all.return_value = df
         mock_lookup.return_value = mock_instance
-        
+
         results = self.source.lookup("Apple")
         self.assertEqual(len(results), 1)
         self.assertEqual(results[0].name, "Unknown")
         self.assertIsNone(results[0].exchange)
+
 
 if __name__ == "__main__":
     unittest.main()

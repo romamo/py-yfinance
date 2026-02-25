@@ -41,7 +41,6 @@ class TestYFinanceResolve(unittest.TestCase):
         mock_price_history._history_metadata = {"currency": "USD"}
         mock_instance._price_history = mock_price_history
 
-
         mock_instance.info = {
             "symbol": "AAPL",
             "longName": "Apple Inc.",

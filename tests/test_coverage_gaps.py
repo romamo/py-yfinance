@@ -13,39 +13,39 @@ from py_yfinance.source import YFinanceDataSource
 def source():
     return YFinanceDataSource()
 
+
 def test_validate_candidate_data_empty_hist(source):
     with patch("yfinance.Ticker") as mock_ticker:
         mock_t = MagicMock()
         mock_t.history.return_value = pd.DataFrame()
         mock_ticker.return_value = mock_t
-        
+
         result = source._validate_candidate_data(Ticker("AAPL"))
         assert result is None
+
 
 def test_validate_candidate_data_zero_price(source):
     with patch("yfinance.Ticker") as mock_ticker:
         mock_t = MagicMock()
-        df = pd.DataFrame(
-            [{"Close": 0.0, "Low": 0.0, "High": 0.0}], index=[pd.Timestamp.now()]
-        )
+        df = pd.DataFrame([{"Close": 0.0, "Low": 0.0, "High": 0.0}], index=[pd.Timestamp.now()])
         mock_t.history.return_value = df
         mock_ticker.return_value = mock_t
-        
+
         result = source._validate_candidate_data(Ticker("AAPL"))
         assert result is None
+
 
 def test_get_price_with_date(source):
     target_date = date(2024, 1, 1)
     with patch("yfinance.Ticker") as mock_ticker:
         mock_t = MagicMock()
-        df = pd.DataFrame(
-            [{"Close": 150.0}], index=[pd.Timestamp(target_date)]
-        )
+        df = pd.DataFrame([{"Close": 150.0}], index=[pd.Timestamp(target_date)])
         mock_t.history.return_value = df
         mock_ticker.return_value = mock_t
-        
+
         price = source.get_price("AAPL", as_of=target_date)
         assert price.root == 150.0
+
 
 def test_get_price_with_date_fail(source):
     target_date = date(2024, 1, 1)
@@ -53,9 +53,10 @@ def test_get_price_with_date_fail(source):
         mock_t = MagicMock()
         mock_t.history.return_value = pd.DataFrame()
         mock_ticker.return_value = mock_t
-        
+
         with pytest.raises(RuntimeError, match="Could not retrieve price"):
             source.get_price("AAPL", as_of=target_date)
+
 
 def test_cli_lookup_json(source):
     cmd = LookupCommand(ticker="AAPL", format="json")
@@ -68,17 +69,17 @@ def test_cli_lookup_json(source):
             price=Price(150.0),
         )
         mock_resolve.return_value.model_dump_json.return_value = '{"ticker": "AAPL"}'
-        
+
         with patch("builtins.print") as mock_print:
             cmd.cli_cmd()
             mock_print.assert_called_with('{"ticker": "AAPL"}')
+
 
 def test_cli_history_text(source):
     cmd = HistoryCommand(ticker="AAPL", format="text")
     with patch("py_yfinance.cli.source.history") as mock_history:
         mock_history.return_value = MagicMock(
-            symbol=MagicMock(ticker="AAPL"),
-            candles=[MagicMock(date="2024-01-01", close=150.0)]
+            symbol=MagicMock(ticker="AAPL"), candles=[MagicMock(date="2024-01-01", close=150.0)]
         )
         with patch("builtins.print") as mock_print:
             cmd.cli_cmd()
@@ -87,15 +88,17 @@ def test_cli_history_text(source):
             assert any("Symbol: AAPL" in s for s in calls)
             assert any("Last Candle" in s for s in calls)
 
+
 def test_app_cli_logging_setup():
     app = AppCLI.model_construct(v=True)
     app.lookup = MagicMock()
     app.history = None
-    
+
     with patch("py_yfinance.cli.setup_logging") as mock_setup:
         with patch("pydantic_settings.CliApp.run_subcommand"):
             app.cli_cmd()
             mock_setup.assert_called()
+
 
 def test_validate_candidate_data_price_mismatch(source):
     with patch("yfinance.Ticker") as mock_ticker:
@@ -107,13 +110,16 @@ def test_validate_candidate_data_price_mismatch(source):
         )
         mock_t.history.return_value = df
         mock_ticker.return_value = mock_t
-        
+
         from pydantic_market_data.models import PriceVerificationError
+
         with pytest.raises(PriceVerificationError):
             source._validate_candidate_data(Ticker("AAPL"), target_price=Price(200.0))
+
 
 def test_cli_app_main():
     with patch("pydantic_settings.CliApp.run") as mock_run:
         from py_yfinance.cli import main
+
         main()
         mock_run.assert_called_with(AppCLI)

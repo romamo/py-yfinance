@@ -21,5 +21,6 @@ class TestLoggingUtils(unittest.TestCase):
         setup_logging(v=False, vv=False, silence_loggers=["test_noisy"])
         self.assertEqual(logging.getLogger("test_noisy").getEffectiveLevel(), logging.WARNING)
 
+
 if __name__ == "__main__":
     unittest.main()

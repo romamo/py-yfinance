@@ -38,6 +38,7 @@ class LookupCommand(SearchArgs):
 
     def cli_cmd(self) -> None:
         from pydantic import TypeAdapter
+
         target_price_vo = Price(self.price) if self.price else None
         target_date_vo = TypeAdapter(StrictDate).validate_python(self.date) if self.date else None
 
