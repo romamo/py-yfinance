@@ -1,4 +1,4 @@
-# py-yfinance
+# yfinance
 
 A structured Python interface for retrieving and validating market data using `yfinance`.
 Implements the `DataSource` protocol from `pydantic-market-data` to provide type-safe security resolution and historical data fetching.
@@ -16,7 +16,7 @@ Implements the `DataSource` protocol from `pydantic-market-data` to provide type
 
 ```bash
 # Basic installation
-uv pip install py-yfinance
+uv pip install yfinance
 ```
 
 ## Usage
@@ -57,18 +57,18 @@ Resolve a security by Symbol or ISIN.
 
 ```bash
 # Basic Lookup
-uv run py-yfinance lookup --symbol AAPL
+uv run yfinance lookup --symbol AAPL
 
 # ISIN Lookup with Strict Validation
 # Verifies that NL0010273215 commanded a price of ~923.4 on 2025-12-15
-uv run py-yfinance lookup --isin NL0010273215 --date 2025-12-15 --price 923.4
+uv run yfinance lookup --isin NL0010273215 --date 2025-12-15 --price 923.4
 ```
 
 #### History
 Fetch historical candles.
 
 ```bash
-uv run py-yfinance history AAPL --period 5d
+uv run yfinance history AAPL --period 5d
 ```
 
 ## Development
@@ -77,7 +77,7 @@ This project uses `uv` for dependency management.
 
 ```bash
 # Sync dependencies
-uv sync --extra cli
+uv sync
 
 # Run Tests
 uv run pytest

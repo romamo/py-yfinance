@@ -19,15 +19,14 @@ class TestYFinanceIntegration(unittest.TestCase):
         result = self.source.resolve(criteria)
 
         self.assertIsNotNone(result)
-        self.assertEqual(result.ticker, "AAPL")
+        # Using str() or .root because result.ticker is a Ticker VO
+        self.assertEqual(str(result.ticker), "AAPL")
         self.assertIn("Apple", result.name)
-
-
 
     def test_live_history(self):
         hist = self.source.history("AAPL", period=HistoryPeriod.D1)
         self.assertIsNotNone(hist)
-        self.assertEqual(hist.symbol.ticker, "AAPL")
+        self.assertEqual(str(hist.symbol.ticker), "AAPL")
         self.assertGreater(len(hist.candles), 0)
 
 

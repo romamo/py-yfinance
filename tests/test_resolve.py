@@ -18,28 +18,29 @@ class TestYFinanceResolve(unittest.TestCase):
         mock_search_instance = MagicMock()
         mock_search_instance.quotes = [
             {
-                "symbol": "AAPL", 
-                "shortname": "Apple Inc.", 
-                "exchange": "NASDAQ", 
-                "country": "United States"
+                "symbol": "AAPL",
+                "shortname": "Apple Inc.",
+                "exchange": "NASDAQ",
+                "country": "United States",
             }
         ]
         mock_search.return_value = mock_search_instance
 
         # Setup mock Ticker
         mock_instance = MagicMock()
-        
+
         # Mock history for validation
         mock_hist = MagicMock()
         mock_hist.empty = False
         mock_hist.iloc = MagicMock()
         mock_hist.iloc.__getitem__.return_value = {"Close": 150.0}
         mock_instance.history.return_value = mock_hist
-        
+
         # Mock history_metadata via internal _price_history
         mock_price_history = MagicMock()
         mock_price_history._history_metadata = {"currency": "USD"}
         mock_instance._price_history = mock_price_history
+
 
         mock_instance.info = {
             "symbol": "AAPL",
@@ -54,13 +55,11 @@ class TestYFinanceResolve(unittest.TestCase):
         result = self.source.resolve(criteria)
 
         self.assertIsNotNone(result)
-        self.assertEqual(result.ticker, "AAPL")
+        self.assertEqual(result.ticker.root, "AAPL")
         self.assertEqual(result.name, "Apple Inc.")
 
         # Ensure Ticker was called with "AAPL"
         mock_ticker.assert_called_with("AAPL")
-
-
 
     @patch("py_yfinance.source.Search")
     @patch("yfinance.Ticker")

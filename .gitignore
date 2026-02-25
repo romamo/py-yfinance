@@ -8,3 +8,10 @@ wheels/
 
 # Virtual environments
 .venv
+
+# Temporary and generated files
+.cache/
+.coverage
+tmp/
+analysis_results.json
+schema.json
