@@ -166,8 +166,12 @@ class YFinanceDataSource(DataSource):
                 raw = criteria.target_price
                 target_price_vo = raw if isinstance(raw, Price) else Price(raw)
 
-            data = self._validate_candidate_data(Ticker(ticker), target_date, target_price_vo)
-            if not data:
+            try:
+                data = self._validate_candidate_data(Ticker(ticker), target_date, target_price_vo)
+                if not data:
+                    continue
+            except PriceVerificationError as e:
+                logger.debug(f"Candidate {ticker} failed verification: {e}")
                 continue
 
             # Use metadata from Search result (candidate)
@@ -246,7 +250,7 @@ class YFinanceDataSource(DataSource):
             close = round(float(row["Close"]), 2)
             if not low <= price_val <= high:
                 raise PriceVerificationError(
-                    f"Price {price_val} does not match {ticker_str}",
+                    f"Price {price_val} is outside daily range",
                     ticker=ticker_str,
                     actual_date=target_date or date.today(),
                     expected_price=price_val,

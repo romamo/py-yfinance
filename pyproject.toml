@@ -27,8 +27,6 @@ dependencies = [
     "pydantic-settings>=2.7.1",
 ]
 
-[tool.uv.sources]
-pydantic-market-data = { path = "../pydantic-market-data", editable = true }
 
 [project.urls]
 Homepage = "https://github.com/romamo/yfinance"
@@ -61,6 +59,20 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/py_yfinance"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/src/py_yfinance",
+    "/tests",
+    "/CHANGELOG.md",
+    "/README.md",
+    "/LICENSE",
+]
+exclude = [
+    "/.agent",
+    "/.github",
+    "/uv.lock",
+]
 
 
 

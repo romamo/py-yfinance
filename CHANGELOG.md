@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.1.8] - 2026-03-27
+
+### Changed
+- **Core**: Improved `PriceVerificationError` handling to be more descriptive.
+- **Data Source**: Enhanced `YFinanceDataSource` to gracefully handle empty data and add source metadata to errors.
+
+## [0.1.7] - 2026-02-19
+
+### Fixed
+- **CI**: Sync formatting and merged recent status fixes.
+
 ## [0.1.6] - 2026-02-19
 
 ### Fixed
