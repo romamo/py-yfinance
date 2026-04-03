@@ -209,9 +209,39 @@ class YFinanceDataSource(DataSource):
         if criteria.symbol:
             symbol_str = str(criteria.symbol)
             s = Search(symbol_str, max_results=100, news_count=0, lists_count=0)
+            
+            # Map request asset_class to Yahoo quoteType
+            target_quote_type = None
+            if criteria.asset_class:
+                ac = str(criteria.asset_class).upper()
+                if "CRYPTO" in ac:
+                    target_quote_type = "CRYPTOCURRENCY"
+                elif "STOCK" in ac or "EQUITY" in ac:
+                    target_quote_type = "EQUITY"
+                elif "ETF" in ac:
+                    target_quote_type = "ETF"
+                elif "INDEX" in ac:
+                    target_quote_type = "INDEX"
+                else:
+                    # If an asset class was requested but is unrecognizable,
+                    # we must fail the search to prevent incorrect matches.
+                    return
+
             for q in s.quotes:
                 symbol = q.get("symbol")
-                if symbol and symbol.startswith(symbol_str):
+                if not symbol:
+                    continue
+                
+                # Apply asset_class filtering if requested
+                if target_quote_type:
+                    q_type = q.get("quoteType", "").upper()
+                    if q_type != target_quote_type:
+                        logger.debug(
+                        f"Skipping {symbol}: Yahoo type {q_type} != {target_quote_type}"
+                    )
+                        continue
+
+                if symbol.startswith(symbol_str):
                     yield q
 
     def _validate_candidate_data(

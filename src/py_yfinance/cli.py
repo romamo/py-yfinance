@@ -49,6 +49,7 @@ class LookupCommand(SearchArgs):
             target_date=target_date_vo.value if target_date_vo else None,
             exchange=self.exchange,
             currency=Currency(self.currency.upper()) if self.currency else None,
+            asset_class=self.asset_class,
         )
 
         try:
