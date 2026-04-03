@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.9] - 2026-04-03
+
+### Added
+- **Search**: Support for `asset_class` filtering in `YFinanceDataSource.resolve`.
+- **Validation**: Strict validation for asset class names (CRYPTO, STOCK, ETF, INDEX).
+
+
 ## [0.1.8] - 2026-03-27
 
 ### Changed

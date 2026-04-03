@@ -209,7 +209,7 @@ class YFinanceDataSource(DataSource):
         if criteria.symbol:
             symbol_str = str(criteria.symbol)
             s = Search(symbol_str, max_results=100, news_count=0, lists_count=0)
-            
+
             # Map request asset_class to Yahoo quoteType
             target_quote_type = None
             if criteria.asset_class:
@@ -231,14 +231,14 @@ class YFinanceDataSource(DataSource):
                 symbol = q.get("symbol")
                 if not symbol:
                     continue
-                
+
                 # Apply asset_class filtering if requested
                 if target_quote_type:
                     q_type = q.get("quoteType", "").upper()
                     if q_type != target_quote_type:
                         logger.debug(
-                        f"Skipping {symbol}: Yahoo type {q_type} != {target_quote_type}"
-                    )
+                            f"Skipping {symbol}: Yahoo type {q_type} != {target_quote_type}"
+                        )
                         continue
 
                 if symbol.startswith(symbol_str):
