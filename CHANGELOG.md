@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.10] - 2026-04-03
+
+### Fixed
+- **Packaging**: Remove local path dependency for `pydantic-market-data` to ensure PyPI compatibility.
+
+
 ## [0.1.9] - 2026-04-03
 
 ### Added

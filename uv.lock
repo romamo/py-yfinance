@@ -984,7 +984,7 @@ wheels = [
 
 [[package]]
 name = "py-yfinance"
-version = "0.1.8"
+version = "0.1.9"
 source = { editable = "." }
 dependencies = [
     { name = "pycountry" },
@@ -1007,7 +1007,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "pycountry", specifier = ">=26.2.16" },
-    { name = "pydantic-market-data", directory = "../pydantic-market-data" },
+    { name = "pydantic-market-data", specifier = ">=0.1.10" },
     { name = "pydantic-settings", specifier = ">=2.7.1" },
     { name = "yfinance", specifier = ">=1.2.0" },
 ]
@@ -1189,7 +1189,7 @@ wheels = [
 [[package]]
 name = "pydantic-market-data"
 version = "0.1.16"
-source = { directory = "../pydantic-market-data" }
+source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "pandas", version = "2.3.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
     { name = "pandas", version = "3.0.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
@@ -1198,24 +1198,9 @@ dependencies = [
     { name = "pydantic-extra-types" },
     { name = "pydantic-settings" },
 ]
-
-[package.metadata]
-requires-dist = [
-    { name = "pandas", specifier = ">=2.2.0" },
-    { name = "pycountry", specifier = ">=24.6.1" },
-    { name = "pydantic", specifier = ">=2.0.0" },
-    { name = "pydantic-extra-types", specifier = ">=2.11.0" },
-    { name = "pydantic-settings", specifier = ">=2.7.0" },
-]
-
-[package.metadata.requires-dev]
-dev = [
-    { name = "bandit", specifier = ">=1.8.3" },
-    { name = "mypy", specifier = ">=1.15.0" },
-    { name = "pandas-stubs" },
-    { name = "pytest" },
-    { name = "pytest-cov", specifier = ">=6.0.0" },
-    { name = "ruff" },
+sdist = { url = "https://files.pythonhosted.org/packages/ae/55/7537350dd85910e309d408686f56fad17dd1a43b3e074b2e0d1f4ad350f8/pydantic_market_data-0.1.16.tar.gz", hash = "sha256:8c769960c93f55df270a4f985169bb82001671f30ad0ced3332b9f040ac4ee2e", size = 91560, upload-time = "2026-03-27T18:07:01.618Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/ad/a1/1c3f1896d3952580e3f9e841751161551b3e3534d4cd8868ed5260ed3238/pydantic_market_data-0.1.16-py3-none-any.whl", hash = "sha256:91b71033e1661da2c78069f79fa5e51d63a1346d950d0480fd1a176bcf754824", size = 9439, upload-time = "2026-03-27T18:07:02.506Z" },
 ]
 
 [[package]]

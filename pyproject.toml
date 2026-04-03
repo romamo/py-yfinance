@@ -43,8 +43,6 @@ dev-dependencies = [
     "pandas-stubs",
 ]
 
-[tool.uv.sources]
-pydantic-market-data = { path = "../pydantic-market-data" }
 
 [tool.ruff]
 line-length = 100
