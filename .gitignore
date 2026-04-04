@@ -15,3 +15,8 @@ wheels/
 tmp/
 analysis_results.json
 schema.json
+
+# IDE and OS files
+.DS_Store
+.idea/
+.env

@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.11] - 2026-04-04
+
+### Fixed
+- **Dependencies**: Updated `pydantic-market-data` to `>=0.1.17` to fix missing `asset_class` in `SecurityCriteria`.
+- **Packaging**: Removed tracked `.DS_Store` and updated `.gitignore` for better repository hygiene.
+
 ## [0.1.10] - 2026-04-03
 
 ### Fixed
