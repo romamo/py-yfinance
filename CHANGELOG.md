@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.12] - 2026-04-14
+
+### Fixed
+- **Protocol**: Renamed `as_of` parameter to `date` in `YFinanceDataSource.get_price` to fully align with the `DataSource` protocol.
+- **Internal**: Refactored `src/py_yfinance/source.py` to use `datetime.date` and `datetime.timedelta`, resolving shadowing issues with the renamed `date` parameter.
+
 ## [0.1.11] - 2026-04-04
 
 ### Fixed

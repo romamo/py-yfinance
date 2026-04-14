@@ -20,3 +20,6 @@ schema.json
 .DS_Store
 .idea/
 .env
+
+# Added by oss-package-engineer
+*.pyc

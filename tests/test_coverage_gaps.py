@@ -43,7 +43,7 @@ def test_get_price_with_date(source):
         mock_t.history.return_value = df
         mock_ticker.return_value = mock_t
 
-        price = source.get_price("AAPL", as_of=target_date)
+        price = source.get_price("AAPL", date=target_date)
         assert price.root == 150.0
 
 
@@ -55,7 +55,7 @@ def test_get_price_with_date_fail(source):
         mock_ticker.return_value = mock_t
 
         with pytest.raises(RuntimeError, match="Could not retrieve price"):
-            source.get_price("AAPL", as_of=target_date)
+            source.get_price("AAPL", date=target_date)
 
 
 def test_cli_lookup_json(source):

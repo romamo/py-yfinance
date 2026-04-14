@@ -1,8 +1,8 @@
 from __future__ import annotations
 
+import datetime
 import logging
 from dataclasses import dataclass
-from datetime import date, timedelta
 from typing import Any, Iterator
 
 import pycountry
@@ -247,7 +247,7 @@ class YFinanceDataSource(DataSource):
     def _validate_candidate_data(
         self,
         ticker: Ticker.Input,
-        target_date: date | None = None,
+        target_date: datetime.date | None = None,
         target_price: Price.Input | None = None,
     ) -> ValidatedCandidate | None:
         """
@@ -259,8 +259,8 @@ class YFinanceDataSource(DataSource):
 
         if target_date:
             hist = t.history(
-                start=(target_date - timedelta(days=5)).strftime("%Y-%m-%d"),
-                end=(target_date + timedelta(days=1)).strftime("%Y-%m-%d"),
+                start=(target_date - datetime.timedelta(days=5)).strftime("%Y-%m-%d"),
+                end=(target_date + datetime.timedelta(days=1)).strftime("%Y-%m-%d"),
             )
         else:
             hist = t.history(period="5d")
@@ -282,7 +282,7 @@ class YFinanceDataSource(DataSource):
                 raise PriceVerificationError(
                     f"Price {price_val} is outside daily range",
                     ticker=ticker_str,
-                    actual_date=target_date or date.today(),
+                    actual_date=target_date or datetime.date.today(),
                     expected_price=price_val,
                     actual_low=low,
                     actual_high=high,
@@ -334,12 +334,12 @@ class YFinanceDataSource(DataSource):
             candles=candles,
         )
 
-    def _fetch_close(self, t: yf.Ticker, end_date: date) -> float | None:
+    def _fetch_close(self, t: yf.Ticker, end_date: datetime.date) -> float | None:
         """
         Fetch the most recent closing price in the 5-day window ending on end_date.
         Returns None if no data is available.
         """
-        start_date = end_date - timedelta(days=5)
+        start_date = end_date - datetime.timedelta(days=5)
         hist = t.history(
             start=start_date.isoformat(),
             end=end_date.isoformat(),
@@ -351,7 +351,7 @@ class YFinanceDataSource(DataSource):
             return float(hist.iloc[-1]["Close"])
         return None
 
-    def get_price(self, ticker: Ticker.Input, as_of: date | None = None) -> Price:
+    def get_price(self, ticker: Ticker.Input, date: datetime.date | None = None) -> Price:
         """
         Get the current price using a single efficient history call.
         """
@@ -359,14 +359,14 @@ class YFinanceDataSource(DataSource):
         ticker_str = ticker_vo.root
         t = yf.Ticker(ticker_str)
 
-        if as_of:
-            close = self._fetch_close(t, end_date=as_of + timedelta(days=1))
+        if date:
+            close = self._fetch_close(t, end_date=date + datetime.timedelta(days=1))
             if close is not None:
                 return Price(close)
-            raise RuntimeError(f"Could not retrieve price for ticker '{ticker_str}' on {as_of}")
+            raise RuntimeError(f"Could not retrieve price for ticker '{ticker_str}' on {date}")
 
         # Current price: use today+1 as end so today's bar is included
-        close = self._fetch_close(t, end_date=date.today() + timedelta(days=1))
+        close = self._fetch_close(t, end_date=datetime.date.today() + datetime.timedelta(days=1))
         if close is not None:
             return Price(close)
 
@@ -376,7 +376,9 @@ class YFinanceDataSource(DataSource):
 
         raise RuntimeError(f"Could not retrieve price for ticker '{ticker_str}'")
 
-    def validate(self, ticker: Ticker.Input, target_date: date, target_price: Price.Input) -> bool:
+    def validate(
+        self, ticker: Ticker.Input, target_date: datetime.date, target_price: Price.Input
+    ) -> bool:
         """
         Validates if the ticker traded near the target price on the target date.
         """
