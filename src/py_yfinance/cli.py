@@ -12,6 +12,7 @@ from pydantic_market_data.models import (
     Currency,
     Price,
     PriceVerificationError,
+    Security,
     SecurityCriteria,
     StrictDate,
     Symbol,
@@ -81,6 +82,35 @@ class LookupCommand(SearchArgs):
             sys.exit(1)
 
 
+class SearchCommand(BaseSettings):
+    """Search for securities by query string"""
+
+    query: str = Field(..., description="Search query string")
+    format: str = Field("text", description="Output format (text, json)")
+
+    def cli_cmd(self) -> None:
+        results = source.search(self.query)
+
+        if not results:
+            print("No results found.")
+            return
+
+        if self.format == "json":
+            from pydantic import TypeAdapter
+
+            adapter = TypeAdapter(list[Security])
+            print(adapter.dump_json(results, indent=2).decode())
+        else:
+            for res in results:
+                symbol_str = (
+                    str(res.symbol.root) if hasattr(res.symbol, "root") else str(res.symbol)
+                )
+                print(
+                    f"{symbol_str:10} | {res.name[:40]:40} | "
+                    f"{res.exchange or 'N/A':6} | {res.country or 'N/A'}"
+                )
+
+
 class HistoryCommand(HistoryArgs):
     """Get historical data for a symbol"""
 
@@ -132,10 +162,17 @@ class AppCLI(BaseSettings, GlobalArgs):
 
     lookup: CliSubCommand[LookupCommand]
     history: CliSubCommand[HistoryCommand]
+    search: CliSubCommand[SearchCommand]
 
     def cli_cmd(self) -> None:
         # Resolve the active subcommand (the one that is not None)
-        subcommand = self.lookup if self.lookup is not None else self.history
+        subcommand = (
+            self.lookup
+            if self.lookup is not None
+            else self.history
+            if self.history is not None
+            else self.search
+        )
         # Propagate v/vv flags from subcommand
         v = self.v or getattr(subcommand, "v", False)
         vv = self.vv or getattr(subcommand, "vv", False)

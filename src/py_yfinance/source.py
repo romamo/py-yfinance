@@ -172,6 +172,28 @@ class YFinanceDataSource(DataSource):
                 )
                 if not data:
                     continue
+
+                if criteria.currency:
+                    target_currency = (
+                        criteria.currency
+                        if isinstance(criteria.currency, Currency)
+                        else Currency(str(criteria.currency))
+                    )
+                    actual_currency = (
+                        data.currency
+                        if isinstance(data.currency, Currency)
+                        else Currency(str(data.currency))
+                        if data.currency
+                        else None
+                    )
+
+                    if actual_currency != target_currency:
+                        logger.debug(
+                            f"Skipping {symbol_str}: Currency {actual_currency} "
+                            f"({type(actual_currency)}) does not match expected "
+                            f"{target_currency} ({type(target_currency)})"
+                        )
+                        continue
             except PriceVerificationError as e:
                 logger.debug(f"Candidate {symbol_str} failed verification: {e}")
                 continue
@@ -224,6 +246,8 @@ class YFinanceDataSource(DataSource):
                     target_quote_type = "ETF"
                 elif "INDEX" in ac:
                     target_quote_type = "INDEX"
+                elif "CURR" in ac:
+                    target_quote_type = "CURRENCY"
                 else:
                     # If an asset class was requested but is unrecognizable,
                     # we must fail the search to prevent incorrect matches.
