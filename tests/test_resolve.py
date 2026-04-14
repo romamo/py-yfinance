@@ -54,7 +54,7 @@ class TestYFinanceResolve(unittest.TestCase):
         result = self.source.resolve(criteria)
 
         self.assertIsNotNone(result)
-        self.assertEqual(result.ticker.root, "AAPL")
+        self.assertEqual(result.symbol.root, "AAPL")
         self.assertEqual(result.name, "Apple Inc.")
 
         # Ensure Ticker was called with "AAPL"

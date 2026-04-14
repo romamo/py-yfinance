@@ -48,10 +48,10 @@ class TestYFinanceDataSourceCoverage(unittest.TestCase):
 
         results = self.source.search("Apple")
         self.assertEqual(len(results), 2)
-        self.assertEqual(results[0].ticker.root, "AAPL")
+        self.assertEqual(results[0].symbol.root, "AAPL")
         self.assertEqual(results[0].name, "Apple Inc.")
         self.assertEqual(results[0].country.root, "US")
-        self.assertEqual(results[1].ticker.root, "MSFT")
+        self.assertEqual(results[1].symbol.root, "MSFT")
         self.assertEqual(results[1].name, "Microsoft")
         self.assertIsNone(results[1].country)
 
@@ -66,7 +66,7 @@ class TestYFinanceDataSourceCoverage(unittest.TestCase):
 
         results = self.source.search("Apple")
         self.assertEqual(len(results), 1)
-        self.assertEqual(results[0].ticker.root, "AAPL")
+        self.assertEqual(results[0].symbol.root, "AAPL")
         self.assertEqual(results[0].name, "Unknown")
 
     @patch("yfinance.Lookup")
@@ -84,8 +84,8 @@ class TestYFinanceDataSourceCoverage(unittest.TestCase):
 
         results = self.source.lookup("Apple")
         self.assertEqual(len(results), 2)
-        self.assertEqual(results[0].ticker.root, "AAPL")
-        self.assertEqual(results[1].ticker.root, "MSFT")
+        self.assertEqual(results[0].symbol.root, "AAPL")
+        self.assertEqual(results[1].symbol.root, "MSFT")
 
     @patch("yfinance.Lookup")
     def test_lookup_empty(self, mock_lookup):
@@ -115,7 +115,7 @@ class TestYFinanceDataSourceCoverage(unittest.TestCase):
         result = self.source.resolve(criteria)
 
         self.assertIsNotNone(result)
-        self.assertEqual(result.ticker.root, "AAPL")
+        self.assertEqual(result.symbol.root, "AAPL")
         self.assertEqual(result.price.root, 150.0)
         self.assertEqual(result.asset_class, "EQUITY")
 
@@ -268,7 +268,7 @@ class TestYFinanceDataSourceCoverage(unittest.TestCase):
         criteria = SecurityCriteria(symbol="AAPL")
         result = self.source.resolve(criteria)
         self.assertIsNotNone(result)
-        self.assertEqual(result.ticker.root, "MSFT")
+        self.assertEqual(result.symbol.root, "MSFT")
         # Should call validate exactly twice: once for the first AAPL, once for MSFT.
         # The second AAPL is skipped via line 151 'continue'.
         self.assertEqual(mock_val.call_count, 2)

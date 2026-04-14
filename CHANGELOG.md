@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.1.13] - 2026-04-14
+
+### Changed
+- **Breaking**: Replaced `Ticker` with `Symbol` and `Security` models to align with `pydantic-market-data>=0.2.0`.
+- **Breaking**: Renamed CLI argument `--ticker` to `--symbol` (inherited from `pydantic-market-data`).
+- **Source**: Updated `YFinanceDataSource` method signatures and internal logic to use `Symbol` and `Security` types.
+- **Search**: `search` and `lookup` now return a list of `Security` objects instead of `Symbol`.
+- **History**: `history` now returns a `History` object containing a `Security` instead of just a `Symbol`.
+
 ## [0.1.12] - 2026-04-14
 
 ### Fixed

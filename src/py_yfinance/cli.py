@@ -14,7 +14,7 @@ from pydantic_market_data.models import (
     PriceVerificationError,
     SecurityCriteria,
     StrictDate,
-    Ticker,
+    Symbol,
 )
 from pydantic_settings import (
     BaseSettings,
@@ -39,12 +39,16 @@ class LookupCommand(SearchArgs):
     def cli_cmd(self) -> None:
         from pydantic import TypeAdapter
 
+        if not (self.isin or self.symbol):
+            logger.error("Error: At least one of --isin or --symbol must be provided.")
+            sys.exit(1)
+
         target_price_vo = Price(self.price) if self.price else None
         target_date_vo = TypeAdapter(StrictDate).validate_python(self.date) if self.date else None
 
         criteria = SecurityCriteria(
             isin=self.isin,
-            symbol=self.ticker,
+            symbol=self.symbol,
             target_price=target_price_vo,
             target_date=target_date_vo.value if target_date_vo else None,
             exchange=self.exchange,
@@ -68,7 +72,7 @@ class LookupCommand(SearchArgs):
                     label = f"Price on {self.date}" if self.date else "Last Price"
                     price_str = f" [{label}: {result.price.root:.2f} {result.currency}]"
 
-                print(f"Ticker: {result.ticker}")
+                print(f"Symbol: {result.symbol}")
                 print(f"Name: {result.name}")
                 print(f"Exchange: {result.exchange}")
                 print(f"Currency: {result.currency}{price_str}")
@@ -78,15 +82,20 @@ class LookupCommand(SearchArgs):
 
 
 class HistoryCommand(HistoryArgs):
-    """Get historical data for a ticker"""
+    """Get historical data for a symbol"""
 
     def cli_cmd(self) -> None:
-        hist = source.history(Ticker(self.ticker or self.isin or ""), period=self.period)
+        identifier = self.symbol or self.isin
+        if not identifier:
+            logger.error("Error: At least one of --symbol or --isin must be provided.")
+            sys.exit(1)
+
+        hist = source.history(Symbol(identifier), period=self.period)
 
         if self.format == "json":
             print(hist.model_dump_json(indent=2))
         else:
-            print(f"Symbol: {hist.symbol.ticker}")
+            print(f"Symbol: {hist.security.symbol}")
             print(f"Candles: {len(hist.candles)}")
 
             if hist.candles:

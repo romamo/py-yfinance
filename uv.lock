@@ -1007,7 +1007,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "pycountry", specifier = ">=26.2.16" },
-    { name = "pydantic-market-data", specifier = ">=0.1.17" },
+    { name = "pydantic-market-data", specifier = ">=0.2.0" },
     { name = "pydantic-settings", specifier = ">=2.7.1" },
     { name = "yfinance", specifier = ">=1.2.0" },
 ]
@@ -1188,7 +1188,7 @@ wheels = [
 
 [[package]]
 name = "pydantic-market-data"
-version = "0.1.17"
+version = "0.2.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "pandas", version = "2.3.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
@@ -1198,9 +1198,9 @@ dependencies = [
     { name = "pydantic-extra-types" },
     { name = "pydantic-settings" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/3c/7c/e555ef9d11289188debf8b24f00be50147bb1bd682474934370dbed77bac/pydantic_market_data-0.1.17.tar.gz", hash = "sha256:7f9236d023cb2363ccad6b0125d8cd886f664fe16e56071dcdeb60661e1ed31c", size = 13966, upload-time = "2026-04-04T08:23:21.309Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/24/bc/511a23b25268604b647b535cca32a5990ceb97d783e644af173feb714243/pydantic_market_data-0.2.0.tar.gz", hash = "sha256:c55c33a72e15dde4da4e777010d00e2351a59f0905924000ddf000e2952362f0", size = 14145, upload-time = "2026-04-14T13:17:25.623Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/fb/e6/f5d0ff87876b35a2570188715b4b0bce252f73bffaba123ec9a60bff2379/pydantic_market_data-0.1.17-py3-none-any.whl", hash = "sha256:97ca94ea24f4ba2ddd45626ee9f06d3b712e14c9f8feca745c44adab6f45c7d9", size = 9602, upload-time = "2026-04-04T08:23:20.455Z" },
+    { url = "https://files.pythonhosted.org/packages/71/aa/09c1ccc71e28aa6bf692ec10494f182f76c1bbce827a350470ffbd23c540/pydantic_market_data-0.2.0-py3-none-any.whl", hash = "sha256:4bfaf62e28f3cf8aeabd5fea367c08c7adc443a5e8364694bf4169f9509abca2", size = 9659, upload-time = "2026-04-14T13:17:24.524Z" },
 ]
 
 [[package]]

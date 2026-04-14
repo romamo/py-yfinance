@@ -16,9 +16,9 @@ from pydantic_market_data.models import (
     HistoryPeriod,
     Price,
     PriceVerificationError,
+    Security,
     SecurityCriteria,
     Symbol,
-    Ticker,
 )
 from yfinance import Search  # type: ignore
 
@@ -35,9 +35,9 @@ class ValidatedCandidate:
     currency: Currency | None
 
 
-class SearchResult(Symbol):
+class SearchResult(Security):
     """
-    Extended Symbol with optional price information.
+    Extended Security with optional price information.
     """
 
     price: Price | None = None
@@ -73,15 +73,15 @@ class YFinanceDataSource(DataSource):
             logger.debug(f"Could not map country name: {country_name}")
         return None
 
-    def search(self, query: str) -> list[Symbol]:
+    def search(self, query: str) -> list[Security]:
         """
         Search for securities using yfinance.Search.
         """
         s = Search(query)
         results = []
         for q in s.quotes:
-            symbol_ticker = q.get("symbol")
-            if not symbol_ticker:
+            symbol_str = q.get("symbol")
+            if not symbol_str:
                 continue
 
             name = q.get("shortname", q.get("longname"))
@@ -92,18 +92,18 @@ class YFinanceDataSource(DataSource):
             if not isinstance(exchange, str):
                 exchange = None
 
-            # Map quote to Symbol
-            sym = Symbol(
-                ticker=str(symbol_ticker),
+            # Map quote to Security
+            sec = Security(
+                symbol=Symbol(symbol_str),
                 name=name,
                 exchange=exchange,
                 country=self._map_country(q.get("country")),
                 currency=None,  # Search results might not have currency, resolved later
             )
-            results.append(sym)
+            results.append(sec)
         return results
 
-    def lookup(self, query: str) -> list[Symbol]:
+    def lookup(self, query: str) -> list[Security]:
         """
         Lookup securities using yfinance.Lookup.
         """
@@ -123,14 +123,14 @@ class YFinanceDataSource(DataSource):
             if not isinstance(exchange, str):
                 exchange = None
 
-            sym = Symbol(
-                ticker=str(symbol),
+            sec = Security(
+                symbol=Symbol(str(symbol)),
                 name=name,
                 exchange=exchange,
                 country=None,  # Lookup data does not provide country
                 currency=None,
             )
-            results.append(sym)
+            results.append(sec)
         return results
 
     def resolve(self, criteria: SecurityCriteria) -> SearchResult | None:
@@ -138,7 +138,7 @@ class YFinanceDataSource(DataSource):
         Resolve a security based on provided criteria.
         Prioritizes ISIN > Symbol.
         Validates against target_price if provided.
-        Ensures the candidate ticker has valid historical data.
+        Ensures the candidate symbol has valid historical data.
         """
         candidates = self._generate_candidates(criteria)
 
@@ -146,15 +146,15 @@ class YFinanceDataSource(DataSource):
         seen = set()
         for candidate in candidates:
             # candidate is now a dict with metadata
-            ticker = candidate.get("symbol")
-            if not ticker or ticker in seen:
+            symbol_str = candidate.get("symbol")
+            if not symbol_str or symbol_str in seen:
                 continue
-            seen.add(ticker)
+            seen.add(symbol_str)
 
             exchange = candidate.get("exchange")
             if criteria.exchange and exchange and criteria.exchange.lower() not in exchange.lower():
                 logger.debug(
-                    f"Skipping {ticker}: Exchange {exchange} does not match "
+                    f"Skipping {symbol_str}: Exchange {exchange} does not match "
                     f"expected {criteria.exchange}"
                 )
                 continue
@@ -167,11 +167,13 @@ class YFinanceDataSource(DataSource):
                 target_price_vo = raw if isinstance(raw, Price) else Price(raw)
 
             try:
-                data = self._validate_candidate_data(Ticker(ticker), target_date, target_price_vo)
+                data = self._validate_candidate_data(
+                    Symbol(symbol_str), target_date, target_price_vo
+                )
                 if not data:
                     continue
             except PriceVerificationError as e:
-                logger.debug(f"Candidate {ticker} failed verification: {e}")
+                logger.debug(f"Candidate {symbol_str} failed verification: {e}")
                 continue
 
             # Use metadata from Search result (candidate)
@@ -179,9 +181,9 @@ class YFinanceDataSource(DataSource):
             country = self._map_country(candidate.get("country"))
             asset_class = candidate.get("quoteType") or candidate.get("typeDisp")
 
-            logger.debug(f"Resolved {ticker} as {name} ({asset_class})")
+            logger.debug(f"Resolved {symbol_str} as {name} ({asset_class})")
             return SearchResult(
-                ticker=ticker,
+                symbol=Symbol(symbol_str),
                 name=name,
                 exchange=exchange,
                 country=country,
@@ -246,16 +248,16 @@ class YFinanceDataSource(DataSource):
 
     def _validate_candidate_data(
         self,
-        ticker: Ticker.Input,
+        symbol: Symbol.Input,
         target_date: datetime.date | None = None,
         target_price: Price.Input | None = None,
     ) -> ValidatedCandidate | None:
         """
-        Validates ticker data and returns strictly-typed candidate data.
+        Validates symbol data and returns strictly-typed candidate data.
         """
-        ticker_vo = Ticker(ticker) if not isinstance(ticker, Ticker) else ticker
-        ticker_str = ticker_vo.root
-        t = yf.Ticker(ticker_str)
+        symbol_vo = Symbol(symbol) if not isinstance(symbol, Symbol) else symbol
+        symbol_str = symbol_vo.root
+        t = yf.Ticker(symbol_str)
 
         if target_date:
             hist = t.history(
@@ -281,7 +283,7 @@ class YFinanceDataSource(DataSource):
             if not low <= price_val <= high:
                 raise PriceVerificationError(
                     f"Price {price_val} is outside daily range",
-                    ticker=ticker_str,
+                    symbol=symbol_str,
                     actual_date=target_date or datetime.date.today(),
                     expected_price=price_val,
                     actual_low=low,
@@ -292,28 +294,28 @@ class YFinanceDataSource(DataSource):
         current_price = round(float(row["Close"]), 2)
 
         if current_price == 0.0:
-            logger.debug(f"Skipping {ticker_str}: Price is 0.0")
+            logger.debug(f"Skipping {symbol_str}: Price is 0.0")
             return None
 
         # Access the private _history_metadata directly to avoid the extra HTTP
         # request that t.fast_info.currency would trigger.
         raw_currency = t._price_history._history_metadata.get("currency")
         currency = Currency(raw_currency) if raw_currency else None
-        logger.debug(f"Validated data for {ticker_str}: {current_price} {raw_currency}")
+        logger.debug(f"Validated data for {symbol_str}: {current_price} {raw_currency}")
 
         return ValidatedCandidate(
             price=Price(current_price),
             currency=currency,
         )
 
-    def history(self, ticker: Ticker.Input, period: HistoryPeriod = HistoryPeriod.MO1) -> History:
+    def history(self, symbol: Symbol.Input, period: HistoryPeriod = HistoryPeriod.MO1) -> History:
         """
-        Fetch historical data for a ticker.
+        Fetch historical data for a symbol.
         """
-        ticker_vo = Ticker(ticker) if not isinstance(ticker, Ticker) else ticker
-        ticker_str = ticker_vo.root
+        symbol_vo = Symbol(symbol) if not isinstance(symbol, Symbol) else symbol
+        symbol_str = symbol_vo.root
         period_str = period.value
-        t = yf.Ticker(ticker_str)
+        t = yf.Ticker(symbol_str)
         df = t.history(period=period_str)
 
         candles = []
@@ -330,7 +332,7 @@ class YFinanceDataSource(DataSource):
             )
 
         return History(
-            symbol=Symbol(ticker=ticker_vo, name=ticker_str),  # Simplified
+            security=Security(symbol=symbol_vo, name=symbol_str),  # Simplified
             candles=candles,
         )
 
@@ -351,19 +353,19 @@ class YFinanceDataSource(DataSource):
             return float(hist.iloc[-1]["Close"])
         return None
 
-    def get_price(self, ticker: Ticker.Input, date: datetime.date | None = None) -> Price:
+    def get_price(self, symbol: Symbol.Input, date: datetime.date | None = None) -> Price:
         """
         Get the current price using a single efficient history call.
         """
-        ticker_vo = Ticker(ticker) if not isinstance(ticker, Ticker) else ticker
-        ticker_str = ticker_vo.root
-        t = yf.Ticker(ticker_str)
+        symbol_vo = Symbol(symbol) if not isinstance(symbol, Symbol) else symbol
+        symbol_str = symbol_vo.root
+        t = yf.Ticker(symbol_str)
 
         if date:
             close = self._fetch_close(t, end_date=date + datetime.timedelta(days=1))
             if close is not None:
                 return Price(close)
-            raise RuntimeError(f"Could not retrieve price for ticker '{ticker_str}' on {date}")
+            raise RuntimeError(f"Could not retrieve price for symbol '{symbol_str}' on {date}")
 
         # Current price: use today+1 as end so today's bar is included
         close = self._fetch_close(t, end_date=datetime.date.today() + datetime.timedelta(days=1))
@@ -374,16 +376,16 @@ class YFinanceDataSource(DataSource):
         if t.fast_info and t.fast_info.last_price is not None:
             return Price(float(t.fast_info.last_price))
 
-        raise RuntimeError(f"Could not retrieve price for ticker '{ticker_str}'")
+        raise RuntimeError(f"Could not retrieve price for symbol '{symbol_str}'")
 
     def validate(
-        self, ticker: Ticker.Input, target_date: datetime.date, target_price: Price.Input
+        self, symbol: Symbol.Input, target_date: datetime.date, target_price: Price.Input
     ) -> bool:
         """
-        Validates if the ticker traded near the target price on the target date.
+        Validates if the symbol traded near the target price on the target date.
         """
-        ticker_vo = Ticker(ticker) if not isinstance(ticker, Ticker) else ticker
+        symbol_vo = Symbol(symbol) if not isinstance(symbol, Symbol) else symbol
         price_vo = Price(target_price) if not isinstance(target_price, Price) else target_price
-        # Pass already-coerced VOs; _validate_candidate_data accepts Ticker/Price directly.
-        result = self._validate_candidate_data(ticker_vo, target_date, price_vo)
+        # Pass already-coerced VOs; _validate_candidate_data accepts Symbol/Price directly.
+        result = self._validate_candidate_data(symbol_vo, target_date, price_vo)
         return result is not None

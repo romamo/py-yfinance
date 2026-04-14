@@ -9,7 +9,7 @@ from py_yfinance.source import YFinanceDataSource
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Lookup ticker symbol using yfinance.")
+    parser = argparse.ArgumentParser(description="Lookup security symbol using yfinance.")
     parser.add_argument("--isin", type=str, help="ISIN of the security")
     parser.add_argument("--symbol", type=str, help="Symbol")
     parser.add_argument("--desc", type=str, help="Description")
@@ -32,10 +32,10 @@ def main():
         # exchange=args.exchange  TODO: since 0.1.10
     )
 
-    symbol = source.resolve(criteria)
+    security = source.resolve(criteria)
 
-    if symbol:
-        print(symbol.ticker)
+    if security:
+        print(security.symbol.root)
         sys.exit(0)
     else:
         sys.exit(1)  # Not found

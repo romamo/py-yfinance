@@ -3,7 +3,7 @@ from unittest.mock import MagicMock, patch
 
 import pandas as pd
 import pytest
-from pydantic_market_data.models import Price, Ticker
+from pydantic_market_data.models import Price, Symbol
 
 from py_yfinance.cli import AppCLI, HistoryCommand, LookupCommand
 from py_yfinance.source import YFinanceDataSource
@@ -20,7 +20,7 @@ def test_validate_candidate_data_empty_hist(source):
         mock_t.history.return_value = pd.DataFrame()
         mock_ticker.return_value = mock_t
 
-        result = source._validate_candidate_data(Ticker("AAPL"))
+        result = source._validate_candidate_data(Symbol("AAPL"))
         assert result is None
 
 
@@ -31,7 +31,7 @@ def test_validate_candidate_data_zero_price(source):
         mock_t.history.return_value = df
         mock_ticker.return_value = mock_t
 
-        result = source._validate_candidate_data(Ticker("AAPL"))
+        result = source._validate_candidate_data(Symbol("AAPL"))
         assert result is None
 
 
@@ -59,27 +59,27 @@ def test_get_price_with_date_fail(source):
 
 
 def test_cli_lookup_json(source):
-    cmd = LookupCommand(ticker="AAPL", format="json")
+    cmd = LookupCommand(symbol="AAPL", format="json")
     with patch("py_yfinance.cli.source.resolve") as mock_resolve:
         mock_resolve.return_value = MagicMock(
-            ticker="AAPL",
+            symbol="AAPL",
             name="Apple",
             exchange="NSQ",
             currency="USD",
             price=Price(150.0),
         )
-        mock_resolve.return_value.model_dump_json.return_value = '{"ticker": "AAPL"}'
+        mock_resolve.return_value.model_dump_json.return_value = '{"symbol": "AAPL"}'
 
         with patch("builtins.print") as mock_print:
             cmd.cli_cmd()
-            mock_print.assert_called_with('{"ticker": "AAPL"}')
+            mock_print.assert_called_with('{"symbol": "AAPL"}')
 
 
 def test_cli_history_text(source):
-    cmd = HistoryCommand(ticker="AAPL", format="text")
+    cmd = HistoryCommand(symbol="AAPL", format="text")
     with patch("py_yfinance.cli.source.history") as mock_history:
         mock_history.return_value = MagicMock(
-            symbol=MagicMock(ticker="AAPL"), candles=[MagicMock(date="2024-01-01", close=150.0)]
+            security=MagicMock(symbol="AAPL"), candles=[MagicMock(date="2024-01-01", close=150.0)]
         )
         with patch("builtins.print") as mock_print:
             cmd.cli_cmd()
@@ -114,7 +114,7 @@ def test_validate_candidate_data_price_mismatch(source):
         from pydantic_market_data.models import PriceVerificationError
 
         with pytest.raises(PriceVerificationError):
-            source._validate_candidate_data(Ticker("AAPL"), target_price=Price(200.0))
+            source._validate_candidate_data(Symbol("AAPL"), target_price=Price(200.0))
 
 
 def test_cli_app_main():

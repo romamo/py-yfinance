@@ -27,13 +27,13 @@ uv sync
 ### Running the CLI
 ```bash
 # Lookup by Symbol
-uv run yfinance lookup --ticker AAPL
+uv run yfinance lookup --symbol AAPL
 
 # Lookup by ISIN with Price Validation
 uv run yfinance lookup --isin NL0010273215 --date 2025-12-15 --price 923.4
 
 # Fetch History
-uv run yfinance history AAPL --period 1mo
+uv run yfinance history --symbol AAPL --period 1mo
 ```
 
 ### Testing and Quality
