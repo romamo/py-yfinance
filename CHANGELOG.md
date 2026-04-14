@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.1.14] - 2026-04-14
+
+### Fixed
+- **Linting**: Resolved missing `Security` import and fixed long lines in CLI and source code identified by `ruff`.
+
 ## [0.1.13] - 2026-04-14
 
 ### Changed
