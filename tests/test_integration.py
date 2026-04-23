@@ -1,6 +1,6 @@
 import unittest
 
-from pydantic_market_data.models import HistoryPeriod, SecurityCriteria
+from pydantic_market_data.models import HistoryPeriod, SecurityQuery
 
 from py_yfinance.source import YFinanceDataSource
 
@@ -15,7 +15,7 @@ class TestYFinanceIntegration(unittest.TestCase):
         self.source = YFinanceDataSource()
 
     def test_live_resolve_aapl(self):
-        criteria = SecurityCriteria(symbol="AAPL")
+        criteria = SecurityQuery(symbol="AAPL")
         result = self.source.resolve(criteria)
 
         self.assertIsNotNone(result)

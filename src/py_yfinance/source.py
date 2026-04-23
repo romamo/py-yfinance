@@ -17,7 +17,7 @@ from pydantic_market_data.models import (
     Price,
     PriceVerificationError,
     Security,
-    SecurityCriteria,
+    SecurityQuery,
     Symbol,
 )
 from yfinance import Search  # type: ignore
@@ -133,11 +133,11 @@ class YFinanceDataSource(DataSource):
             results.append(sec)
         return results
 
-    def resolve(self, criteria: SecurityCriteria) -> SearchResult | None:
+    def resolve(self, criteria: SecurityQuery) -> SearchResult | None:
         """
         Resolve a security based on provided criteria.
         Prioritizes ISIN > Symbol.
-        Validates against target_price if provided.
+        Validates against price_on if provided.
         Ensures the candidate symbol has valid historical data.
         """
         candidates = self._generate_candidates(criteria)
@@ -159,11 +159,11 @@ class YFinanceDataSource(DataSource):
                 )
                 continue
 
-            target_date = criteria.target_date
+            target_date = criteria.price_on.date if criteria.price_on else None
 
             target_price_vo: Price | None = None
-            if criteria.target_price is not None:
-                raw = criteria.target_price
+            if criteria.price_on is not None:
+                raw = criteria.price_on.price
                 target_price_vo = raw if isinstance(raw, Price) else Price(raw)
 
             try:
@@ -216,7 +216,7 @@ class YFinanceDataSource(DataSource):
             )
         return None
 
-    def _generate_candidates(self, criteria: SecurityCriteria) -> Iterator[dict[str, Any]]:
+    def _generate_candidates(self, criteria: SecurityQuery) -> Iterator[dict[str, Any]]:
         """
         Yields dictionaries containing metadata from yfinance.Search.
         ISIN candidates are yielded first, then symbol candidates, matching the

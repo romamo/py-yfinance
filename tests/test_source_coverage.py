@@ -3,7 +3,7 @@ from datetime import date
 from unittest.mock import MagicMock, patch
 
 import pandas as pd
-from pydantic_market_data.models import Currency, HistoryPeriod, Price, SecurityCriteria
+from pydantic_market_data.models import Currency, HistoryPeriod, Price, SecurityQuery
 
 from py_yfinance.source import (
     PriceVerificationError,
@@ -111,7 +111,7 @@ class TestYFinanceDataSourceCoverage(unittest.TestCase):
         )
         mock_val.return_value = ValidatedCandidate(price=Price(150.0), currency=Currency("USD"))
 
-        criteria = SecurityCriteria(symbol="AAPL")
+        criteria = SecurityQuery(symbol="AAPL")
         result = self.source.resolve(criteria)
 
         self.assertIsNotNone(result)
@@ -124,7 +124,7 @@ class TestYFinanceDataSourceCoverage(unittest.TestCase):
     def test_resolve_exchange_mismatch(self, mock_gen, mock_val):
         mock_gen.return_value = iter([{"symbol": "AAPL", "exchange": "Frankfurt"}])
 
-        criteria = SecurityCriteria(symbol="AAPL", exchange="NASDAQ")
+        criteria = SecurityQuery(symbol="AAPL", exchange="NASDAQ")
         result = self.source.resolve(criteria)
         self.assertIsNone(result)
 
@@ -134,7 +134,7 @@ class TestYFinanceDataSourceCoverage(unittest.TestCase):
         mock_instance.quotes = [{"symbol": "AAPL"}]
         mock_search.return_value = mock_instance
 
-        candidates = list(self.source._generate_candidates(SecurityCriteria(isin="US0378331005")))
+        candidates = list(self.source._generate_candidates(SecurityQuery(isin="US0378331005")))
         self.assertEqual(len(candidates), 1)
         self.assertEqual(candidates[0]["symbol"], "AAPL")
 
@@ -265,7 +265,7 @@ class TestYFinanceDataSourceCoverage(unittest.TestCase):
             ValidatedCandidate(price=Price(150.0), currency=Currency("USD")),
         ]
 
-        criteria = SecurityCriteria(symbol="AAPL")
+        criteria = SecurityQuery(symbol="AAPL")
         result = self.source.resolve(criteria)
         self.assertIsNotNone(result)
         self.assertEqual(result.symbol.root, "MSFT")
@@ -279,7 +279,7 @@ class TestYFinanceDataSourceCoverage(unittest.TestCase):
         mock_gen.return_value = iter([{"symbol": "AAPL"}])
         mock_val.return_value = None
 
-        result = self.source.resolve(SecurityCriteria(symbol="AAPL"))
+        result = self.source.resolve(SecurityQuery(symbol="AAPL"))
         self.assertIsNone(result)
 
     @patch("yfinance.Lookup")

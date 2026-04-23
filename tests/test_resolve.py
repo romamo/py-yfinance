@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import MagicMock, patch
 
-from pydantic_market_data.models import SecurityCriteria
+from pydantic_market_data.models import SecurityQuery
 
 from py_yfinance.source import YFinanceDataSource
 
@@ -50,7 +50,7 @@ class TestYFinanceResolve(unittest.TestCase):
         }
         mock_ticker.return_value = mock_instance
 
-        criteria = SecurityCriteria(symbol="AAPL")
+        criteria = SecurityQuery(symbol="AAPL")
         result = self.source.resolve(criteria)
 
         self.assertIsNotNone(result)
@@ -76,7 +76,7 @@ class TestYFinanceResolve(unittest.TestCase):
         mock_instance.fast_info = mock_fast_info
         mock_ticker.return_value = mock_instance
 
-        criteria = SecurityCriteria(symbol="INVALID")
+        criteria = SecurityQuery(symbol="INVALID")
         result = self.source.resolve(criteria)
 
         self.assertIsNone(result)

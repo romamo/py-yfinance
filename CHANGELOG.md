@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.15] - 2026-04-23
+
+### Changed
+- **Breaking**: Aligned with `pydantic-market-data>=0.3.0` — `SecurityCriteria` renamed to `SecurityQuery`; separate `target_price` / `target_date` fields replaced by a single `price_on: PriceOnDate | None` field.
+- **Dependencies**: Bumped `yfinance>=1.3.0` and `pydantic-settings>=2.14.0`.
+
 ## [0.1.14] - 2026-04-14
 
 ### Fixed

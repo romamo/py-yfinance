@@ -11,9 +11,10 @@ from pydantic_market_data.cli_models import (
 from pydantic_market_data.models import (
     Currency,
     Price,
+    PriceOnDate,
     PriceVerificationError,
     Security,
-    SecurityCriteria,
+    SecurityQuery,
     StrictDate,
     Symbol,
 )
@@ -47,11 +48,14 @@ class LookupCommand(SearchArgs):
         target_price_vo = Price(self.price) if self.price else None
         target_date_vo = TypeAdapter(StrictDate).validate_python(self.date) if self.date else None
 
-        criteria = SecurityCriteria(
+        price_on = None
+        if target_price_vo is not None and target_date_vo is not None:
+            price_on = PriceOnDate(price=target_price_vo, date=target_date_vo.value)
+
+        criteria = SecurityQuery(
             isin=self.isin,
             symbol=self.symbol,
-            target_price=target_price_vo,
-            target_date=target_date_vo.value if target_date_vo else None,
+            price_on=price_on,
             exchange=self.exchange,
             currency=Currency(self.currency.upper()) if self.currency else None,
             asset_class=self.asset_class,
