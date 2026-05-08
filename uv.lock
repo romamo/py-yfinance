@@ -1019,7 +1019,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "pycountry", specifier = ">=26.2.16" },
-    { name = "pydantic-market-data", specifier = ">=0.3.0" },
+    { name = "pydantic-market-data", specifier = ">=0.3.2" },
     { name = "pydantic-settings", specifier = ">=2.14.0" },
     { name = "yfinance", specifier = ">=1.3.0" },
 ]
@@ -1200,7 +1200,7 @@ wheels = [
 
 [[package]]
 name = "pydantic-market-data"
-version = "0.3.0"
+version = "0.3.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "pandas", version = "2.3.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
@@ -1210,9 +1210,9 @@ dependencies = [
     { name = "pydantic-extra-types" },
     { name = "pydantic-settings" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/42/92/c427c6ed97f810a40ae9a7f66268ed9be33562637915b88d0c491940e7aa/pydantic_market_data-0.3.0.tar.gz", hash = "sha256:18632e03528d8673f91af79d3d7fc81b52bafe1545126b835642664652bea851", size = 14980, upload-time = "2026-04-23T09:12:42.626Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/c0/0a/cfdcc9e25d93d5556e480bc87f0c8a01c905c5939f39dad7d9abd43aa42e/pydantic_market_data-0.3.2.tar.gz", hash = "sha256:7083fe0e73877994ab467f17e5741af5859952b484fb6187f3d260529399f7bd", size = 15554, upload-time = "2026-05-08T09:32:32.753Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/75/69/dacda5e3b96f70af99db4d0a7c51cd496ee465a479539ce92fddbab93b72/pydantic_market_data-0.3.0-py3-none-any.whl", hash = "sha256:8e9489ddc37231271d6c6884833e4ba90da7824a0f2976631beef2eeeee5e86c", size = 9987, upload-time = "2026-04-23T09:12:43.367Z" },
+    { url = "https://files.pythonhosted.org/packages/9c/64/bb7cfb3e16a3d9da9babe224da40c23e461b0e78f88274b55d897125d92b/pydantic_market_data-0.3.2-py3-none-any.whl", hash = "sha256:d31318746c9e91d7feef729ffe94f8d59a68a258857b6aa16aad7ce795f0dcba", size = 10011, upload-time = "2026-05-08T09:32:31.876Z" },
 ]
 
 [[package]]

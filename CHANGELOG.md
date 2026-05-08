@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.16] - 2026-05-08
+
+### Added
+- **Validation**: `price_tolerance` parameter on `validate` (default `0.10`) and `_validate_candidate_data` — allows prices outside the daily OHLC range if within the given percentage of close.
+
+### Changed
+- **Dependencies**: Bumped `pydantic-market-data` to `>=0.3.2`.
+
 ## [0.1.15] - 2026-04-23
 
 ### Changed

@@ -275,6 +275,7 @@ class YFinanceDataSource(DataSource):
         symbol: Symbol.Input,
         target_date: datetime.date | None = None,
         target_price: Price.Input | None = None,
+        price_tolerance: float | None = None,
     ) -> ValidatedCandidate | None:
         """
         Validates symbol data and returns strictly-typed candidate data.
@@ -304,16 +305,35 @@ class YFinanceDataSource(DataSource):
             low = round(float(row["Low"]), 2)
             high = round(float(row["High"]), 2)
             close = round(float(row["Close"]), 2)
-            if not low <= price_val <= high:
-                raise PriceVerificationError(
-                    f"Price {price_val} is outside daily range",
-                    symbol=symbol_str,
-                    actual_date=target_date or datetime.date.today(),
-                    expected_price=price_val,
-                    actual_low=low,
-                    actual_high=high,
-                    actual_close=close,
-                )
+            in_range = low <= price_val <= high
+            if not in_range:
+                if price_tolerance is not None:
+                    pct_diff = abs(close - price_val) / price_val
+                    if pct_diff >= price_tolerance:
+                        pct_str = int(price_tolerance * 100)
+                        msg = (
+                            f"Price {price_val} is outside daily range"
+                            f" and not within {pct_str}% of close"
+                        )
+                        raise PriceVerificationError(
+                            msg,
+                            symbol=symbol_str,
+                            actual_date=target_date or datetime.date.today(),
+                            expected_price=price_val,
+                            actual_low=low,
+                            actual_high=high,
+                            actual_close=close,
+                        )
+                else:
+                    raise PriceVerificationError(
+                        f"Price {price_val} is outside daily range",
+                        symbol=symbol_str,
+                        actual_date=target_date or datetime.date.today(),
+                        expected_price=price_val,
+                        actual_low=low,
+                        actual_high=high,
+                        actual_close=close,
+                    )
 
         current_price = round(float(row["Close"]), 2)
 
@@ -403,13 +423,16 @@ class YFinanceDataSource(DataSource):
         raise RuntimeError(f"Could not retrieve price for symbol '{symbol_str}'")
 
     def validate(
-        self, symbol: Symbol.Input, target_date: datetime.date, target_price: Price.Input
+        self,
+        symbol: Symbol.Input,
+        target_date: datetime.date,
+        target_price: Price.Input,
+        price_tolerance: float = 0.10,
     ) -> bool:
         """
         Validates if the symbol traded near the target price on the target date.
         """
         symbol_vo = Symbol(symbol) if not isinstance(symbol, Symbol) else symbol
         price_vo = Price(target_price) if not isinstance(target_price, Price) else target_price
-        # Pass already-coerced VOs; _validate_candidate_data accepts Symbol/Price directly.
-        result = self._validate_candidate_data(symbol_vo, target_date, price_vo)
+        result = self._validate_candidate_data(symbol_vo, target_date, price_vo, price_tolerance)
         return result is not None

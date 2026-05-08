@@ -22,7 +22,7 @@ classifiers = [
 ]
 dependencies = [
     "pycountry>=26.2.16",
-    "pydantic-market-data>=0.3.0",
+    "pydantic-market-data>=0.3.2",
     "yfinance>=1.3.0",
     "pydantic-settings>=2.14.0",
 ]
