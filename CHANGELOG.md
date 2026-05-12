@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.17] - 2026-05-12
+
+### Changed
+- **`resolve`**: `asset_class` is now a proper `AssetClass` enum value (mapped from yfinance `quoteType`) instead of a raw string.
+- **`resolve`**: Added `security_type` field to `SearchResult` (e.g. `"Equity"`, `"Etf"`).
+- **Dependencies**: Bumped `pydantic-market-data` to `>=0.4.0`, pinned `pydantic-settings==2.14.1`.
+
 ## [0.1.16] - 2026-05-08
 
 ### Added

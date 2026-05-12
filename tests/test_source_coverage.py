@@ -3,7 +3,7 @@ from datetime import date
 from unittest.mock import MagicMock, patch
 
 import pandas as pd
-from pydantic_market_data.models import Currency, HistoryPeriod, Price, SecurityQuery
+from pydantic_market_data.models import AssetClass, Currency, HistoryPeriod, Price, SecurityQuery
 
 from py_yfinance.source import (
     PriceVerificationError,
@@ -117,7 +117,7 @@ class TestYFinanceDataSourceCoverage(unittest.TestCase):
         self.assertIsNotNone(result)
         self.assertEqual(result.symbol.root, "AAPL")
         self.assertEqual(result.price.root, 150.0)
-        self.assertEqual(result.asset_class, "EQUITY")
+        self.assertEqual(result.asset_class, AssetClass.EQUITY)
 
     @patch("py_yfinance.source.YFinanceDataSource._validate_candidate_data")
     @patch("py_yfinance.source.YFinanceDataSource._generate_candidates")

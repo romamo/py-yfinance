@@ -996,12 +996,13 @@ wheels = [
 
 [[package]]
 name = "py-yfinance"
-version = "0.1.16"
+version = "0.1.17"
 source = { editable = "." }
 dependencies = [
     { name = "pycountry" },
     { name = "pydantic-market-data" },
     { name = "pydantic-settings" },
+    { name = "pytest" },
     { name = "yfinance" },
 ]
 
@@ -1019,8 +1020,9 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "pycountry", specifier = ">=26.2.16" },
-    { name = "pydantic-market-data", specifier = ">=0.3.2" },
-    { name = "pydantic-settings", specifier = ">=2.14.0" },
+    { name = "pydantic-market-data", specifier = ">=0.4.0" },
+    { name = "pydantic-settings", specifier = "==2.14.1" },
+    { name = "pytest", specifier = "==9.0.3" },
     { name = "yfinance", specifier = ">=1.3.0" },
 ]
 
@@ -1200,7 +1202,7 @@ wheels = [
 
 [[package]]
 name = "pydantic-market-data"
-version = "0.3.2"
+version = "0.4.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "pandas", version = "2.3.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
@@ -1210,23 +1212,23 @@ dependencies = [
     { name = "pydantic-extra-types" },
     { name = "pydantic-settings" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/c0/0a/cfdcc9e25d93d5556e480bc87f0c8a01c905c5939f39dad7d9abd43aa42e/pydantic_market_data-0.3.2.tar.gz", hash = "sha256:7083fe0e73877994ab467f17e5741af5859952b484fb6187f3d260529399f7bd", size = 15554, upload-time = "2026-05-08T09:32:32.753Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/c3/3e/bc976134278580bfe55f711141d390109522dfd8f57325958f039148b168/pydantic_market_data-0.4.1.tar.gz", hash = "sha256:daa5e64fcbaea1eb18ed179cc94eae0b1875625c1ed5c1351ca813f4e18dc77f", size = 15988, upload-time = "2026-05-09T09:45:21.378Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/9c/64/bb7cfb3e16a3d9da9babe224da40c23e461b0e78f88274b55d897125d92b/pydantic_market_data-0.3.2-py3-none-any.whl", hash = "sha256:d31318746c9e91d7feef729ffe94f8d59a68a258857b6aa16aad7ce795f0dcba", size = 10011, upload-time = "2026-05-08T09:32:31.876Z" },
+    { url = "https://files.pythonhosted.org/packages/37/6c/18de881a50a0e60d08d7cee4338800e19ba01204780e76941a30a41dd271/pydantic_market_data-0.4.1-py3-none-any.whl", hash = "sha256:dda36c94cdaeaafbebc548c737aa1fe205efcf109f27326ddf78481e259c9890", size = 10226, upload-time = "2026-05-09T09:45:20.431Z" },
 ]
 
 [[package]]
 name = "pydantic-settings"
-version = "2.14.0"
+version = "2.14.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "pydantic" },
     { name = "python-dotenv" },
     { name = "typing-inspection" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/42/98/c8345dccdc31de4228c039a98f6467a941e39558da41c1744fbe29fa5666/pydantic_settings-2.14.0.tar.gz", hash = "sha256:24285fd4b0e0c06507dd9fdfd331ee23794305352aaec8fc4eb92d4047aeb67d", size = 235709, upload-time = "2026-04-20T13:37:40.293Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/07/60/1d1e59c9c90d54591469ada7d268251f71c24bdb765f1a8a832cee8c6653/pydantic_settings-2.14.1.tar.gz", hash = "sha256:e874d3bec7e787b0c9958277956ed9b4dd5de6a80e162188fdaff7c5e26fd5fa", size = 235551, upload-time = "2026-05-08T13:40:06.542Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/01/dd/bebff3040138f00ae8a102d426b27349b9a49acc310fcae7f92112d867e3/pydantic_settings-2.14.0-py3-none-any.whl", hash = "sha256:fc8d5d692eb7092e43c8647c1c35a3ecd00e040fcf02ed86f4cb5458ca62182e", size = 60940, upload-time = "2026-04-20T13:37:38.586Z" },
+    { url = "https://files.pythonhosted.org/packages/ae/8d/f1af3832f5e6eb13ba94ee809e72b8ecb5eef226d27ee0bef7d963d943c7/pydantic_settings-2.14.1-py3-none-any.whl", hash = "sha256:6e3c7edfd8277687cdc598f56e5cff0e9bfff0910a3749deaa8d4401c3a2b9de", size = 60964, upload-time = "2026-05-08T13:40:04.958Z" },
 ]
 
 [[package]]
@@ -1240,7 +1242,7 @@ wheels = [
 
 [[package]]
 name = "pytest"
-version = "9.0.2"
+version = "9.0.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "colorama", marker = "sys_platform == 'win32'" },
@@ -1251,9 +1253,9 @@ dependencies = [
     { name = "pygments" },
     { name = "tomli", marker = "python_full_version < '3.11'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/d1/db/7ef3487e0fb0049ddb5ce41d3a49c235bf9ad299b6a25d5780a89f19230f/pytest-9.0.2.tar.gz", hash = "sha256:75186651a92bd89611d1d9fc20f0b4345fd827c41ccd5c299a868a05d70edf11", size = 1568901, upload-time = "2025-12-06T21:30:51.014Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/7d/0d/549bd94f1a0a402dc8cf64563a117c0f3765662e2e668477624baeec44d5/pytest-9.0.3.tar.gz", hash = "sha256:b86ada508af81d19edeb213c681b1d48246c1a91d304c6c81a427674c17eb91c", size = 1572165, upload-time = "2026-04-07T17:16:18.027Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/3b/ab/b3226f0bd7cdcf710fbede2b3548584366da3b19b5021e74f5bde2a8fa3f/pytest-9.0.2-py3-none-any.whl", hash = "sha256:711ffd45bf766d5264d487b917733b453d917afd2b0ad65223959f59089f875b", size = 374801, upload-time = "2025-12-06T21:30:49.154Z" },
+    { url = "https://files.pythonhosted.org/packages/d4/24/a372aaf5c9b7208e7112038812994107bc65a84cd00e0354a88c2c77a617/pytest-9.0.3-py3-none-any.whl", hash = "sha256:2c5efc453d45394fdd706ade797c0a81091eccd1d6e4bccfcd476e2b8e0ab5d9", size = 375249, upload-time = "2026-04-07T17:16:16.13Z" },
 ]
 
 [[package]]

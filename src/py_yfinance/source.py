@@ -11,6 +11,7 @@ from pydantic_extra_types.country import CountryAlpha2
 from pydantic_market_data.interfaces import DataSource
 from pydantic_market_data.models import (
     OHLCV,
+    AssetClass,
     Currency,
     History,
     HistoryPeriod,
@@ -21,6 +22,19 @@ from pydantic_market_data.models import (
     Symbol,
 )
 from yfinance import Search  # type: ignore
+
+_YAHOO_QUOTE_TYPE_TO_ASSET_CLASS: dict[str, AssetClass] = {
+    "EQUITY": AssetClass.EQUITY,
+    "ETF": AssetClass.EQUITY,
+    "MUTUALFUND": AssetClass.EQUITY,
+    "CRYPTOCURRENCY": AssetClass.CRYPTO,
+    "CURRENCY": AssetClass.FX,
+    "INDEX": AssetClass.INDEX,
+    "FUTURE": AssetClass.DERIVATIVE,
+    "OPTION": AssetClass.DERIVATIVE,
+    "BOND": AssetClass.FIXED_INCOME,
+    "COMMODITY": AssetClass.COMMODITY,
+}
 
 logger = logging.getLogger(__name__)
 
@@ -201,9 +215,11 @@ class YFinanceDataSource(DataSource):
             # Use metadata from Search result (candidate)
             name = candidate.get("shortname") or candidate.get("longname") or "Unknown"
             country = self._map_country(candidate.get("country"))
-            asset_class = candidate.get("quoteType") or candidate.get("typeDisp")
+            raw_quote_type = (candidate.get("quoteType") or candidate.get("typeDisp") or "").upper()
+            asset_class = _YAHOO_QUOTE_TYPE_TO_ASSET_CLASS.get(raw_quote_type)
+            security_type = raw_quote_type.capitalize() if raw_quote_type else None
 
-            logger.debug(f"Resolved {symbol_str} as {name} ({asset_class})")
+            logger.debug(f"Resolved {symbol_str} as {name} ({raw_quote_type})")
             return SearchResult(
                 symbol=Symbol(symbol_str),
                 name=name,
@@ -211,6 +227,7 @@ class YFinanceDataSource(DataSource):
                 country=country,
                 currency=data.currency,
                 asset_class=asset_class,
+                security_type=security_type,
                 isin=criteria.isin,
                 price=data.price,
             )
