@@ -1,9 +1,9 @@
 [project]
 name = "py-yfinance"
-version = "0.1.18"
+version = "0.2.0"
 description = "A structured Python interface for retrieving and validating market data using yfinance"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.14"
 authors = [
     { name = "Roman Medvedev", email = "pypi@romavm.dev" }
 ]
@@ -13,11 +13,7 @@ classifiers = [
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
-
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
-    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3 :: Only",
     "Programming Language :: Python :: 3.14",
 ]
 dependencies = [
@@ -25,7 +21,6 @@ dependencies = [
     "pydantic-market-data>=0.4.0",
     "yfinance>=1.3.0",
     "pydantic-settings==2.14.1",
-    "pytest==9.0.3",
 ]
 
 
@@ -34,10 +29,10 @@ Homepage = "https://github.com/romamo/yfinance"
 Repository = "https://github.com/romamo/yfinance"
 Issues = "https://github.com/romamo/yfinance/issues"
 
-[tool.uv]
-dev-dependencies = [
+[dependency-groups]
+dev = [
     "ruff",
-    "pytest",
+    "pytest==9.0.3",
     "mypy>=1.19.1",
     "bandit>=1.9.3",
     "pytest-cov>=7.0.0",
@@ -47,10 +42,10 @@ dev-dependencies = [
 
 [tool.ruff]
 line-length = 100
-target-version = "py310"
+target-version = "py314"
 
 [tool.ruff.lint]
-select = ["E", "F", "I"]
+select = ["E", "F", "I", "UP"]
 
 [project.scripts]
 yfinance = "py_yfinance.cli:main"

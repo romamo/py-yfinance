@@ -1,11 +1,12 @@
 import io
 import unittest
 from contextlib import redirect_stdout
+from datetime import date
 from unittest.mock import MagicMock, patch
 
-from pydantic_market_data.models import Currency, Price, Symbol
+from pydantic_market_data.models import AssetClass, Currency, History, Price, Security, Symbol
 
-from py_yfinance.cli import HistoryCommand, LookupCommand
+from py_yfinance.cli import ExitCode, HistoryCommand, LookupCommand, SearchCommand
 from py_yfinance.source import SearchResult
 
 
@@ -38,22 +39,69 @@ class TestCLI(unittest.TestCase):
 
         with self.assertRaises(SystemExit) as cm:
             cmd.cli_cmd()
-        self.assertEqual(cm.exception.code, 1)
+        self.assertEqual(cm.exception.code, ExitCode.NOT_FOUND)
 
     @patch("py_yfinance.cli.source.resolve")
-    def test_lookup_command_price_verification_error(self, mock_resolve):
-        from datetime import date
+    def test_lookup_command_usage_errors(self, mock_resolve):
+        cases = [
+            {"symbol": "AAPL", "price": 150.0},
+            {"symbol": "AAPL", "date": "2024-01-02"},
+            {"symbol": "AAPL", "price": 150.0, "date": "not-a-date"},
+            {"symbol": "AAPL", "asset_class": "stock"},
+            {"symbol": "AAPL", "format": "yaml"},
+            {"symbol": "AAPL", "country": "US"},
+            {},
+        ]
+        for kwargs in cases:
+            with self.subTest(kwargs=kwargs):
+                with self.assertRaises(SystemExit) as cm:
+                    LookupCommand(**kwargs).cli_cmd()
+                self.assertEqual(cm.exception.code, ExitCode.USAGE)
+        mock_resolve.assert_not_called()
 
-        from pydantic_market_data.models import PriceVerificationError
+    @patch("py_yfinance.cli.source.resolve")
+    def test_lookup_command_builds_query(self, mock_resolve):
+        mock_resolve.return_value = None
+        cmd = LookupCommand(symbol="AAPL", price=150.0, date="2024-01-02", asset_class="Equity")
 
-        mock_resolve.side_effect = PriceVerificationError(
-            "Test Error", symbol="AAPL", actual_date=date(2024, 1, 1), expected_price=100.0
+        with self.assertRaises(SystemExit):
+            cmd.cli_cmd()
+
+        criteria = mock_resolve.call_args.args[0]
+        self.assertEqual(criteria.asset_class, AssetClass.EQUITY)
+        self.assertEqual(len(criteria.price_on), 1)
+        self.assertEqual(criteria.price_on[0].date, date(2024, 1, 2))
+
+    @patch("py_yfinance.cli.source.search")
+    def test_search_command_json_empty(self, mock_search):
+        mock_search.return_value = []
+        f = io.StringIO()
+        with redirect_stdout(f):
+            SearchCommand(query="zzz", format="json").cli_cmd()
+        self.assertEqual(f.getvalue().strip(), "[]")
+
+    @patch("py_yfinance.cli.source.history")
+    @patch("py_yfinance.cli.source.resolve")
+    def test_history_command_resolves_isin(self, mock_resolve, mock_history):
+        mock_resolve.return_value = SearchResult(symbol=Symbol("AAPL"), name="Apple Inc.")
+        mock_history.return_value = History(
+            security=Security(symbol=Symbol("AAPL"), name="AAPL"), candles=[]
         )
-        cmd = LookupCommand(symbol="AAPL", price=150.0)
 
         with self.assertRaises(SystemExit) as cm:
-            cmd.cli_cmd()
-        self.assertEqual(cm.exception.code, 1)
+            HistoryCommand(isin="US0378331005").cli_cmd()
+
+        self.assertEqual(cm.exception.code, ExitCode.NOT_FOUND)
+        self.assertEqual(mock_history.call_args.args[0], Symbol("AAPL"))
+
+    @patch("py_yfinance.cli.source.history")
+    def test_history_command_usage_errors(self, mock_history):
+        for kwargs in ({}, {"symbol": "AAPL", "price": 150.0}):
+            with self.subTest(kwargs=kwargs):
+                with self.assertRaises(SystemExit) as cm:
+                    HistoryCommand(**kwargs).cli_cmd()
+                self.assertEqual(cm.exception.code, ExitCode.USAGE)
+        mock_history.assert_not_called()
 
     @patch("py_yfinance.cli.source.history")
     def test_history_command_json(self, mock_history):

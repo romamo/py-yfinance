@@ -3,7 +3,7 @@
 A structured Python interface for retrieving and validating market data using `yfinance`. This project implements the `DataSource` protocol from `pydantic-market-data`, providing a type-safe and validated way to interact with Yahoo Finance data.
 
 ## Key Technologies
-- **Python 3.10+**
+- **Python 3.14+**
 - **[uv](https://github.com/astral-sh/uv)**: Dependency management and project isolation.
 - **[yfinance](https://github.com/ranaroussi/yfinance)**: The underlying data source.
 - **[pydantic-market-data](https://github.com/romamo/pydantic-market-data)**: Provides the interfaces and models for market data.

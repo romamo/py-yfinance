@@ -1,9 +1,8 @@
-from __future__ import annotations
-
 import datetime
 import logging
+from collections.abc import Iterator
 from dataclasses import dataclass
-from typing import Any, Iterator
+from typing import Any
 
 import pycountry
 import yfinance as yf  # type: ignore
@@ -16,6 +15,7 @@ from pydantic_market_data.models import (
     History,
     HistoryPeriod,
     Price,
+    PriceOnDate,
     PriceVerificationError,
     Security,
     SecurityQuery,
@@ -34,6 +34,15 @@ _YAHOO_QUOTE_TYPE_TO_ASSET_CLASS: dict[str, AssetClass] = {
     "OPTION": AssetClass.DERIVATIVE,
     "BOND": AssetClass.FIXED_INCOME,
     "COMMODITY": AssetClass.COMMODITY,
+}
+
+_ASSET_CLASS_TO_YAHOO_QUOTE_TYPES: dict[AssetClass, frozenset[str]] = {
+    asset_class: frozenset(
+        quote_type
+        for quote_type, mapped in _YAHOO_QUOTE_TYPE_TO_ASSET_CLASS.items()
+        if mapped is asset_class
+    )
+    for asset_class in AssetClass
 }
 
 logger = logging.getLogger(__name__)
@@ -173,17 +182,8 @@ class YFinanceDataSource(DataSource):
                 )
                 continue
 
-            target_date = criteria.price_on.date if criteria.price_on else None
-
-            target_price_vo: Price | None = None
-            if criteria.price_on is not None:
-                raw = criteria.price_on.price
-                target_price_vo = raw if isinstance(raw, Price) else Price(raw)
-
             try:
-                data = self._validate_candidate_data(
-                    Symbol(symbol_str), target_date, target_price_vo
-                )
+                data = self._validate_price_points(Symbol(symbol_str), criteria.price_on or [])
                 if not data:
                     continue
 
@@ -233,58 +233,62 @@ class YFinanceDataSource(DataSource):
             )
         return None
 
+    def _validate_price_points(
+        self, symbol: Symbol, price_points: list[PriceOnDate]
+    ) -> ValidatedCandidate | None:
+        """
+        Validates a candidate against every price point; the candidate must match all of them.
+        Returns the data for the most recent point, or the latest data when there are none.
+        """
+        if not price_points:
+            return self._validate_candidate_data(symbol)
+
+        data: ValidatedCandidate | None = None
+        for point in sorted(price_points, key=lambda p: p.date):
+            price = point.price if isinstance(point.price, Price) else Price(point.price)
+            data = self._validate_candidate_data(symbol, point.date, price)
+            if data is None:
+                return None
+        return data
+
     def _generate_candidates(self, criteria: SecurityQuery) -> Iterator[dict[str, Any]]:
         """
         Yields dictionaries containing metadata from yfinance.Search.
         ISIN candidates are yielded first, then symbol candidates, matching the
         documented resolution priority (ISIN > Symbol).
         """
+        # Map request asset_class to Yahoo quoteTypes. An asset class Yahoo has no
+        # quoteType for matches nothing, to prevent incorrect matches.
+        target_quote_types: frozenset[str] | None = None
+        if criteria.asset_class:
+            target_quote_types = _ASSET_CLASS_TO_YAHOO_QUOTE_TYPES[criteria.asset_class]
+            if not target_quote_types:
+                return
+
+        def matches_asset_class(q: dict[str, Any]) -> bool:
+            if target_quote_types is None:
+                return True
+            q_type = q.get("quoteType", "").upper()
+            if q_type in target_quote_types:
+                return True
+            logger.debug(
+                f"Skipping {q['symbol']}: Yahoo type {q_type} not in {sorted(target_quote_types)}"
+            )
+            return False
+
         if criteria.isin:
             isin_str = str(criteria.isin)
             s = Search(isin_str, max_results=100, news_count=0, lists_count=0)
             for q in s.quotes:
-                symbol = q.get("symbol")
-                if symbol:
+                if q.get("symbol") and matches_asset_class(q):
                     yield q
 
         if criteria.symbol:
             symbol_str = str(criteria.symbol)
             s = Search(symbol_str, max_results=100, news_count=0, lists_count=0)
-
-            # Map request asset_class to Yahoo quoteType
-            target_quote_type = None
-            if criteria.asset_class:
-                ac = str(criteria.asset_class).upper()
-                if "CRYPTO" in ac:
-                    target_quote_type = "CRYPTOCURRENCY"
-                elif "STOCK" in ac or "EQUITY" in ac:
-                    target_quote_type = "EQUITY"
-                elif "ETF" in ac:
-                    target_quote_type = "ETF"
-                elif "INDEX" in ac:
-                    target_quote_type = "INDEX"
-                elif "CURR" in ac:
-                    target_quote_type = "CURRENCY"
-                else:
-                    # If an asset class was requested but is unrecognizable,
-                    # we must fail the search to prevent incorrect matches.
-                    return
-
             for q in s.quotes:
                 symbol = q.get("symbol")
-                if not symbol:
-                    continue
-
-                # Apply asset_class filtering if requested
-                if target_quote_type:
-                    q_type = q.get("quoteType", "").upper()
-                    if q_type != target_quote_type:
-                        logger.debug(
-                            f"Skipping {symbol}: Yahoo type {q_type} != {target_quote_type}"
-                        )
-                        continue
-
-                if symbol.startswith(symbol_str):
+                if symbol and matches_asset_class(q) and symbol.startswith(symbol_str):
                     yield q
 
     def _validate_candidate_data(
