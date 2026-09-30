@@ -3,7 +3,14 @@ from datetime import date
 from unittest.mock import MagicMock, patch
 
 import pandas as pd
-from pydantic_market_data.models import AssetClass, Currency, HistoryPeriod, Price, SecurityQuery
+from pydantic_market_data.models import (
+    AssetClass,
+    Currency,
+    HistoryPeriod,
+    Price,
+    PriceOnDate,
+    SecurityQuery,
+)
 
 from py_yfinance.source import (
     PriceVerificationError,
@@ -127,6 +134,79 @@ class TestYFinanceDataSourceCoverage(unittest.TestCase):
         criteria = SecurityQuery(symbol="AAPL", exchange="NASDAQ")
         result = self.source.resolve(criteria)
         self.assertIsNone(result)
+
+    @patch("py_yfinance.source.YFinanceDataSource._validate_candidate_data")
+    @patch("py_yfinance.source.YFinanceDataSource._generate_candidates")
+    def test_resolve_price_on_all_points(self, mock_gen, mock_val):
+        mock_gen.return_value = iter([{"symbol": "AAPL"}])
+        mock_val.side_effect = [
+            ValidatedCandidate(price=Price(100.0), currency=Currency("USD")),
+            ValidatedCandidate(price=Price(150.0), currency=Currency("USD")),
+        ]
+        criteria = SecurityQuery(
+            symbol="AAPL",
+            price_on=[
+                PriceOnDate(price=150.0, date=date(2024, 6, 3)),
+                PriceOnDate(price=100.0, date=date(2024, 1, 2)),
+            ],
+        )
+
+        result = self.source.resolve(criteria)
+
+        self.assertIsNotNone(result)
+        self.assertEqual(result.price.root, 150.0)
+        dates = [c.args[1] for c in mock_val.call_args_list]
+        self.assertEqual(dates, [date(2024, 1, 2), date(2024, 6, 3)])
+
+    @patch("py_yfinance.source.YFinanceDataSource._validate_candidate_data")
+    @patch("py_yfinance.source.YFinanceDataSource._generate_candidates")
+    def test_resolve_price_on_one_point_missing(self, mock_gen, mock_val):
+        mock_gen.return_value = iter([{"symbol": "AAPL"}])
+        mock_val.side_effect = [
+            ValidatedCandidate(price=Price(100.0), currency=Currency("USD")),
+            None,
+        ]
+        criteria = SecurityQuery(
+            symbol="AAPL",
+            price_on=[
+                PriceOnDate(price=100.0, date=date(2024, 1, 2)),
+                PriceOnDate(price=150.0, date=date(2024, 6, 3)),
+            ],
+        )
+
+        self.assertIsNone(self.source.resolve(criteria))
+
+    @patch("py_yfinance.source.Search")
+    def test_generate_candidates_asset_class(self, mock_search):
+        mock_instance = MagicMock()
+        mock_instance.quotes = [
+            {"symbol": "EURUSD=X", "quoteType": "CURRENCY"},
+            {"symbol": "EURUSD.L", "quoteType": "EQUITY"},
+        ]
+        mock_search.return_value = mock_instance
+
+        fx = SecurityQuery(symbol="EURUSD", asset_class=AssetClass.FX)
+        cash = SecurityQuery(symbol="EURUSD", asset_class=AssetClass.CASH)
+
+        fx_symbols = [c["symbol"] for c in self.source._generate_candidates(fx)]
+        self.assertEqual(fx_symbols, ["EURUSD=X"])
+        self.assertEqual(list(self.source._generate_candidates(cash)), [])
+
+    @patch("py_yfinance.source.Search")
+    def test_generate_candidates_isin_asset_class(self, mock_search):
+        mock_instance = MagicMock()
+        mock_instance.quotes = [
+            {"symbol": "AAPL", "quoteType": "EQUITY"},
+            {"symbol": "AAPL-FUT", "quoteType": "FUTURE"},
+        ]
+        mock_search.return_value = mock_instance
+
+        fx = SecurityQuery(isin="US0378331005", asset_class=AssetClass.FX)
+        equity = SecurityQuery(isin="US0378331005", asset_class=AssetClass.EQUITY)
+
+        self.assertEqual(list(self.source._generate_candidates(fx)), [])
+        equity_symbols = [c["symbol"] for c in self.source._generate_candidates(equity)]
+        self.assertEqual(equity_symbols, ["AAPL"])
 
     @patch("py_yfinance.source.Search")
     def test_generate_candidates_isin(self, mock_search):

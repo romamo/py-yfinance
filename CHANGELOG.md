@@ -1,5 +1,22 @@
 # Changelog
 
+## [Unreleased]
+
+### Changed
+- **Breaking**: Requires Python 3.14 or later
+- **Breaking (CLI)**: Typed exit codes: `2` for invalid arguments, `3` when nothing is found (was `1`); errors go to stderr
+- **CLI**: Flags that a command ignored (`lookup --desc/--country/--limit`, `history --desc/--exchange/--date/--price`) and unknown `--format` values now exit `2` instead of being silently dropped
+- **CLI**: `lookup --price` and `--date` must be passed together; `--asset-class` is validated against `AssetClass`
+- **CLI**: `search --format json` prints `[]` when nothing matches, so stdout is always valid JSON
+- **Dependencies**: `pytest` moved from runtime to the `dev` dependency group
+
+### Fixed
+- **`resolve`**: Crashed with `AttributeError` whenever `price_on` was set, since `pydantic-market-data` 0.4.1 made it a list; a candidate must now match every price point
+- **`resolve`**: `asset_class` filtering used string matching on the enum, so `FX`, `COMMODITY`, `FIXED_INCOME`, and `DERIVATIVE` never matched; it now maps each `AssetClass` to its Yahoo quote types
+- **`resolve`**: `asset_class` now also filters ISIN candidates, not only symbol candidates
+- **CLI**: `history --isin` passed the ISIN to Yahoo as a symbol; it now resolves the ISIN first
+- **CLI**: `history` with no candles exits `3` instead of printing `Candles: 0`
+
 ## [0.1.17] - 2026-05-12
 
 ### Changed
