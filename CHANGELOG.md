@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [0.3.0] - 2026-10-01
 
 ### Changed
 - **Breaking (CLI)**: The `yfinance` CLI runs on [treaty](https://github.com/romamo/treaty) instead of `pydantic-settings`
