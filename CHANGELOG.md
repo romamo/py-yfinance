@@ -10,7 +10,7 @@
   - `lookup --report-price` is gone: the price is always in the output
   - Data from Yahoo is marked `_trusted: false`, and text formats warn `UNTRUSTED_CONTENT` on stderr
 - **CLI**: New agent features from treaty: `--validate-only`, `--fields`, `--timeout`, `manifest`, and `completion`
-- **Dependencies**: Added `treaty==1.0.0rc10`; dropped the direct `pydantic-settings` pin
+- **Dependencies**: Added `treaty==1.0.0rc11`; dropped the direct `pydantic-settings` pin
 
 ### Removed
 - `py_yfinance.logging_utils`: treaty configures logging
