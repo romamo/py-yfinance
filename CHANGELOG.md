@@ -1,5 +1,10 @@
 # Changelog
 
+## [Unreleased]
+
+### Changed
+- **Dependencies**: Bumped `pydantic-market-data` to `>=0.5.0`, whose `History` rejects candles that are not in strictly ascending date order; `history` builds candles in Yahoo's row order, which was ascending for every symbol and period checked
+
 ## [0.2.0] - 2026-09-30
 
 ### Changed
