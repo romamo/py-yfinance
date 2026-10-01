@@ -1,13 +1,11 @@
-import datetime
 from collections.abc import Mapping, Sequence
 from importlib.metadata import version
 from typing import Any, Self
 
 from pydantic import BaseModel, Field, model_validator
 from pydantic_core import PydanticCustomError
-from pydantic_market_data.cli_models import CLASS, DATE, HistoryQueryArgs, SecurityQueryArgs
+from pydantic_market_data.cli_models import HistoryQueryArgs, SecurityQueryArgs
 from pydantic_market_data.models import (
-    AssetClass,
     Currency,
     History,
     PriceOnDate,
@@ -59,39 +57,13 @@ def _reject_unsupported(command: str, **flags: object) -> None:
 
 
 class LookupArgs(SecurityQueryArgs):
-    asset_class: CLASS | None = Field(
-        None, description=f"Asset class: {', '.join(a.value for a in AssetClass)}"
-    )
-    date: DATE | None = Field(None, description="Date the security traded at --price (YYYY-MM-DD)")
-
-    def asset_class_value(self) -> AssetClass | None:
-        if self.asset_class is None:
-            return None
-        try:
-            return AssetClass(self.asset_class.lower())
-        except ValueError:
-            choices = ", ".join(a.value for a in AssetClass)
-            raise PydanticCustomError(
-                "asset_class", f"--asset-class must be one of {choices}"
-            ) from None
-
-    def date_value(self) -> datetime.date | None:
-        if self.date is None:
-            return None
-        try:
-            return datetime.date.fromisoformat(self.date)
-        except ValueError:
-            raise PydanticCustomError("date", "--date must be a date as YYYY-MM-DD") from None
-
     @model_validator(mode="after")
     def _check(self) -> Self:
-        _reject_unsupported("lookup", desc=self.desc, country=self.country, limit=self.limit != 1)
+        _reject_unsupported("lookup", desc=self.desc, country=self.country)
         if (self.price is None) != (self.date is None):
             raise PydanticCustomError(
                 "flags_together", "--price and --date must be provided together"
             )
-        self.asset_class_value()
-        self.date_value()
         return self
 
 
@@ -114,9 +86,8 @@ class LookupArgs(SecurityQueryArgs):
 )
 def lookup(args: LookupArgs, ctx: Ctx) -> SearchResult:
     price_on = None
-    target_date = args.date_value()
-    if args.price is not None and target_date is not None:
-        price_on = [PriceOnDate(price=args.price, date=target_date)]
+    if args.price is not None and args.date is not None:
+        price_on = [PriceOnDate(price=args.price, date=args.date)]
 
     criteria = SecurityQuery(
         isin=args.isin,
@@ -124,7 +95,7 @@ def lookup(args: LookupArgs, ctx: Ctx) -> SearchResult:
         price_on=price_on,
         exchange=args.exchange,
         currency=Currency(args.currency) if args.currency else None,
-        asset_class=args.asset_class_value(),
+        asset_class=args.asset_class,
     )
     result = source.resolve(criteria)
     if result is None:

@@ -71,6 +71,8 @@ def test_lookup_builds_the_query(mock_resolve):
         {"symbol": "AAPL", "date": "2024-01-02"},
         {"symbol": "AAPL", "price": 150.0, "date": "not-a-date"},
         {"symbol": "AAPL", "asset_class": "stock"},
+        {"symbol": "AAPL", "asset_class": "Equity"},
+        {"symbol": "AAPL", "limit": 3},
         {"symbol": "AAPL", "country": "US"},
     ],
 )
