@@ -1,5 +1,20 @@
 # Changelog
 
+## [Unreleased]
+
+### Changed
+- **Breaking (CLI)**: The `yfinance` CLI runs on [treaty](https://github.com/romamo/treaty) instead of `pydantic-settings`
+  - Output is a JSON envelope (`ok`, `data`, `error`, `meta`) whenever stdout is not a terminal; `--format plain` prints text, `--format tsv` a table
+  - Exit codes: `5` (`NOT_FOUND`) when nothing matches (was `3`); `2` for invalid arguments, now with every error listed in `error.errors`
+  - `-v`/`-vv` become treaty's `--verbose`/`--debug`; `--schema` prints the command's input and output schema
+  - `lookup --report-price` is gone: the price is always in the output
+  - Data from Yahoo is marked `_trusted: false`, and text formats warn `UNTRUSTED_CONTENT` on stderr
+- **CLI**: New agent features from treaty: `--validate-only`, `--fields`, `--timeout`, `manifest`, and `completion`
+- **Dependencies**: Added `treaty==1.0.0rc10`; dropped the direct `pydantic-settings` pin
+
+### Removed
+- `py_yfinance.logging_utils`: treaty configures logging
+
 ## [0.2.1] - 2026-10-01
 
 ### Changed
