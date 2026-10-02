@@ -7,14 +7,13 @@ A structured Python interface for retrieving and validating market data using `y
 - **[uv](https://github.com/astral-sh/uv)**: Dependency management and project isolation.
 - **[yfinance](https://github.com/ranaroussi/yfinance)**: The underlying data source.
 - **[pydantic-market-data](https://github.com/romamo/pydantic-market-data)**: Provides the interfaces and models for market data.
-- **[pydantic-settings](https://github.com/pydantic/pydantic-settings)**: Powers the CLI.
+- **[treaty](https://github.com/romamo/treaty)**: Powers the CLI.
 - **Pytest**: For testing.
 - **Ruff & Mypy**: For linting and type safety.
 
 ## Architecture
 - **`src/py_yfinance/source.py`**: Contains `YFinanceDataSource`, the primary implementation of the `DataSource` protocol. It handles searching, security resolution (ISIN/Symbol), price validation, and historical data fetching.
-- **`src/py_yfinance/cli.py`**: Implements a robust CLI for interacting with the library.
-- **`src/py_yfinance/logging_utils.py`**: Configures logging, supporting `-v` (INFO) and `-vv` (DEBUG) flags.
+- **`src/py_yfinance/cli.py`**: Implements the `lookup`, `history` and `search` commands on treaty; treaty handles output formats, exit codes and `--verbose`/`--debug` logging.
 
 ## Building and Running
 

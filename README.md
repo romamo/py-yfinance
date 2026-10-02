@@ -15,8 +15,7 @@ Implements the `DataSource` protocol from `pydantic-market-data` to provide type
 ## Installation
 
 ```bash
-# Basic installation
-uv pip install yfinance
+uv pip install py-yfinance
 ```
 
 ## Usage
@@ -24,52 +23,58 @@ uv pip install yfinance
 ### As a Library
 
 ```python
-from py_yfinance.source import YFinanceDataSource
-from pydantic_market_data.models import SecurityCriteria
+from py_yfinance import YFinanceDataSource
+from pydantic_market_data.models import PriceOnDate, SecurityQuery
 
 source = YFinanceDataSource()
 
-# 1. Simple Lookup by Symbol
-criteria = SecurityCriteria(symbol="AAPL")
-result = source.resolve(criteria)
-print(result)
-# Symbol(ticker='AAPL', name='Apple Inc.', exchange='NMS', currency='USD', ...)
+# 1. Simple lookup by symbol
+result = source.resolve(SecurityQuery(symbol="AAPL"))
+print(result.symbol, result.price)
 
-# 2. Strict Validation using Date & Price
+# 2. Strict validation by date and price
 # Useful for verifying ISIN mappings or ensuring data quality
-criteria = SecurityCriteria(
+query = SecurityQuery(
     isin="NL0010273215",
-    target_date="2025-12-15",
-    target_price=923.4  # Validates against history
+    price_on=PriceOnDate(date="2025-12-15", price=923.4),
 )
-match = source.resolve(criteria)
+match = source.resolve(query)
 if match:
-    print(f"Verified: {match.ticker}")
+    print(f"Verified: {match.symbol}")
 else:
-    print("Validation failed: Price mismatch or symbol not found")
+    print("Validation failed: price mismatch or symbol not found")
 ```
+
+Dates accept `YYYY-MM-DD`, `YYYY/MM/DD` or `YYYYMMDD`; any other string raises `ValidationError`.
 
 ### CLI Usage
 
-
 #### Lookup
-Resolve a security by Symbol or ISIN.
+Resolve a security by symbol or ISIN.
 
 ```bash
-# Basic Lookup
+# Basic lookup
 uv run yfinance lookup --symbol AAPL
 
-# ISIN Lookup with Strict Validation
-# Verifies that NL0010273215 commanded a price of ~923.4 on 2025-12-15
+# ISIN lookup with strict validation
+# Verifies that NL0010273215 traded near 923.4 on 2025-12-15
 uv run yfinance lookup --isin NL0010273215 --date 2025-12-15 --price 923.4
 ```
 
 #### History
-Fetch historical candles.
+Fetch daily candles.
 
 ```bash
-uv run yfinance history AAPL --period 5d
+uv run yfinance history --symbol AAPL --period 5d
 ```
+
+#### Search
+
+```bash
+uv run yfinance search tesla
+```
+
+Output is a JSON envelope when stdout is not a terminal; pass `--format plain` for text. Run `uv run yfinance <command> --schema` for a command's input and output schema.
 
 ## Development
 
