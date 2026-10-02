@@ -145,3 +145,13 @@ def test_search_with_no_results_is_empty(mock_search):
 
     assert env.exit_code == 0
     assert env.data == []
+
+
+@pytest.mark.parametrize("value", ["01/02/2025", "15.01.2025", "Jan 15 2025"])
+@patch("py_yfinance.cli.source.resolve", return_value=APPLE)
+def test_lookup_rejects_ambiguous_date_formats(mock_resolve, value):
+    env = app.call("lookup", {"symbol": "AAPL", "price": 185.0, "date": value})
+
+    assert env.exit_code == 2
+    assert env.error.errors[0]["field"] == "date"
+    mock_resolve.assert_not_called()
