@@ -60,6 +60,50 @@ class TestYFinanceResolve(unittest.TestCase):
         # Ensure Ticker was called with "AAPL"
         mock_ticker.assert_called_with("AAPL")
 
+    def _mock_lse_listing(self, mock_ticker, mock_search):
+        """Mock a London listing that Yahoo quotes in pence ("GBp")."""
+        mock_search_instance = MagicMock()
+        mock_search_instance.quotes = [
+            {"symbol": "VOD.L", "shortname": "Vodafone Group", "exchange": "LSE"}
+        ]
+        mock_search.return_value = mock_search_instance
+
+        mock_instance = MagicMock()
+        mock_hist = MagicMock()
+        mock_hist.empty = False
+        mock_hist.iloc = MagicMock()
+        mock_hist.iloc.__getitem__.return_value = {"Close": 72.5}
+        mock_instance.history.return_value = mock_hist
+        mock_price_history = MagicMock()
+        mock_price_history._history_metadata = {"currency": "GBp"}
+        mock_instance._price_history = mock_price_history
+        mock_ticker.return_value = mock_instance
+
+    @patch("py_yfinance.source.Search")
+    @patch("yfinance.Ticker")
+    def test_resolve_pence_listing_reports_gbx(self, mock_ticker, mock_search):
+        """Yahoo's "GBp" is pence, so the result must say GBX, not GBP."""
+        self._mock_lse_listing(mock_ticker, mock_search)
+
+        result = self.source.resolve(SecurityQuery(symbol="VOD.L"))
+
+        self.assertIsNotNone(result)
+        self.assertEqual(str(result.currency), "GBX")
+
+    @patch("py_yfinance.source.Search")
+    @patch("yfinance.Ticker")
+    def test_resolve_currency_filter_matches_pence(self, mock_ticker, mock_search):
+        """A GBp or GBX filter matches Yahoo's "GBp"; a GBP filter does not."""
+        self._mock_lse_listing(mock_ticker, mock_search)
+
+        for currency in ("GBp", "GBX", "gbx"):
+            with self.subTest(currency=currency):
+                result = self.source.resolve(SecurityQuery(symbol="VOD.L", currency=currency))
+                self.assertIsNotNone(result)
+                self.assertEqual(result.symbol.root, "VOD.L")
+
+        self.assertIsNone(self.source.resolve(SecurityQuery(symbol="VOD.L", currency="GBP")))
+
     @patch("py_yfinance.source.Search")
     @patch("yfinance.Ticker")
     def test_resolve_not_found(self, mock_ticker, mock_search):

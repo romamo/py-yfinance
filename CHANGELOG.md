@@ -1,5 +1,14 @@
 # Changelog
 
+## [Unreleased]
+
+### Changed
+- **Dependencies**: Bumped `pydantic-market-data` to `>=0.9.0`. `ISIN` and `FIGI` reject a bad format or checksum on construction, and quote currencies include the minor units `GBX`, `ZAC` and `ILA`
+
+### Fixed
+- **Currency**: London listings, which Yahoo quotes in pence (`GBp`), report `currency` as `GBX` instead of `GBP`, so their prices are no longer read as pounds (100x too high)
+- **Currency**: `lookup --currency GBX` (or `currency="GBp"` on `SecurityQuery`) matches London listings quoted in pence; before, no currency filter matched them. `--currency GBP` matches only listings quoted in pounds
+
 ## [0.3.1] - 2026-10-02
 
 ### Changed
