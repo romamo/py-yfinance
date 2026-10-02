@@ -464,7 +464,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "pycountry", specifier = ">=26.2.16" },
-    { name = "pydantic-market-data", specifier = ">=0.7.0" },
+    { name = "pydantic-market-data", specifier = ">=0.9.0" },
     { name = "treaty", specifier = "==1.0.0rc11" },
     { name = "yfinance", specifier = ">=1.3.0" },
 ]
@@ -566,7 +566,7 @@ wheels = [
 
 [[package]]
 name = "pydantic-market-data"
-version = "0.7.0"
+version = "0.9.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "pandas" },
@@ -575,9 +575,9 @@ dependencies = [
     { name = "pydantic-extra-types" },
     { name = "pydantic-settings" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/ce/cf/b9bc3d0df4cb026ca2911305af0a90e93f33757d2680e13323e0d9d818b3/pydantic_market_data-0.7.0.tar.gz", hash = "sha256:7a315cb6d76d0b6a4925349f5179491a0e83313877ae4333d3f9034e43391d26", size = 28937, upload-time = "2026-10-02T15:38:33.911Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/fd/51/b3c66b81bf7603059060912f6ee60629fd874020dcffe39517f70aca76cd/pydantic_market_data-0.9.0.tar.gz", hash = "sha256:1dcb1edf5848dd2a251bd447df4d6e3e4c2803a3bcabec3d9ba1c8a52fe1b28c", size = 34822, upload-time = "2026-10-02T19:13:38.439Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/b5/17/211c1e1040753093ea405420ec034c2a7bd6d0f99332b8c9f3fad5424b67/pydantic_market_data-0.7.0-py3-none-any.whl", hash = "sha256:b21b8adf521aea666a2bbf5d26e5575247ab2fb1eab1b8a27ba18b56ca1520c1", size = 12446, upload-time = "2026-10-02T15:38:32.943Z" },
+    { url = "https://files.pythonhosted.org/packages/f8/e4/3f4294e56d4223c7a50f0288579bc1703b1552fb18a0b8de09b3dc9f5d4a/pydantic_market_data-0.9.0-py3-none-any.whl", hash = "sha256:a854103ca7c81626022ac5dee4cfbf32a6fdab248698760d3656b2f1ca96ad3b", size = 14263, upload-time = "2026-10-02T19:13:37.426Z" },
 ]
 
 [[package]]

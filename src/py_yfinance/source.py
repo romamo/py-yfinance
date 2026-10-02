@@ -11,12 +11,12 @@ from pydantic_market_data.interfaces import DataSource
 from pydantic_market_data.models import (
     OHLCV,
     AssetClass,
-    Currency,
     History,
     HistoryPeriod,
     Price,
     PriceOnDate,
     PriceVerificationError,
+    QuoteCurrency,
     Security,
     SecurityQuery,
     Symbol,
@@ -55,7 +55,7 @@ class ValidatedCandidate:
     """
 
     price: Price
-    currency: Currency | None
+    currency: QuoteCurrency | None
 
 
 class SearchResult(Security):
@@ -188,24 +188,13 @@ class YFinanceDataSource(DataSource):
                     continue
 
                 if criteria.currency:
-                    target_currency = (
-                        criteria.currency
-                        if isinstance(criteria.currency, Currency)
-                        else Currency(str(criteria.currency))
-                    )
-                    actual_currency = (
-                        data.currency
-                        if isinstance(data.currency, Currency)
-                        else Currency(str(data.currency))
-                        if data.currency
-                        else None
-                    )
-
-                    if actual_currency != target_currency:
+                    # Both sides are QuoteCurrency, so Yahoo's "GBp" and a query's "GBp"
+                    # or "GBX" compare equal as pence, and never equal to "GBP"
+                    target_currency = QuoteCurrency(str(criteria.currency))
+                    if data.currency != target_currency:
                         logger.debug(
-                            f"Skipping {symbol_str}: Currency {actual_currency} "
-                            f"({type(actual_currency)}) does not match expected "
-                            f"{target_currency} ({type(target_currency)})"
+                            f"Skipping {symbol_str}: Currency {data.currency} "
+                            f"does not match expected {target_currency}"
                         )
                         continue
             except PriceVerificationError as e:
@@ -365,7 +354,7 @@ class YFinanceDataSource(DataSource):
         # Access the private _history_metadata directly to avoid the extra HTTP
         # request that t.fast_info.currency would trigger.
         raw_currency = t._price_history._history_metadata.get("currency")
-        currency = Currency(raw_currency) if raw_currency else None
+        currency = QuoteCurrency(raw_currency) if raw_currency else None
         logger.debug(f"Validated data for {symbol_str}: {current_price} {raw_currency}")
 
         return ValidatedCandidate(

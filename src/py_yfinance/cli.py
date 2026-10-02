@@ -6,7 +6,6 @@ from pydantic import BaseModel, Field, model_validator
 from pydantic_core import PydanticCustomError
 from pydantic_market_data.cli_models import HistoryQueryArgs, SecurityQueryArgs
 from pydantic_market_data.models import (
-    Currency,
     History,
     PriceOnDate,
     Security,
@@ -94,7 +93,7 @@ def lookup(args: LookupArgs, ctx: Ctx) -> SearchResult:
         symbol=args.symbol,
         price_on=price_on,
         exchange=args.exchange,
-        currency=Currency(args.currency) if args.currency else None,
+        currency=args.currency,
         asset_class=args.asset_class,
     )
     result = source.resolve(criteria)
