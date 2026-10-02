@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [0.3.1] - 2026-10-02
 
 ### Changed
 - **Dependencies**: Bumped `pydantic-market-data` to `>=0.7.0`. `lookup --date` and `PriceOnDate.date` now accept only `YYYY-MM-DD`, `YYYY/MM/DD` or `YYYYMMDD`; ambiguous strings such as `01/02/2025` exit `2` instead of being read month-first
