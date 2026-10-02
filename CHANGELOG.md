@@ -6,7 +6,8 @@
 - **Dependencies**: Bumped `pydantic-market-data` to `>=0.7.0`. `lookup --date` and `PriceOnDate.date` now accept only `YYYY-MM-DD`, `YYYY/MM/DD` or `YYYYMMDD`; ambiguous strings such as `01/02/2025` exit `2` instead of being read month-first
 
 ### Fixed
-- **Docs**: README samples use the current API (`SecurityQuery` with `price_on`, `history --symbol`), install `py-yfinance` instead of the unrelated `yfinance` package, and document `search`; GEMINI.md no longer mentions `pydantic-settings` or the removed `logging_utils`
+- **Docs**: README samples use the current API (`SecurityQuery` with `price_on`, `history --symbol`), install `py-yfinance` instead of the unrelated `yfinance` package, and document `search`
+- **Docs**: Removed `GEMINI.md`, which duplicated the README and had gone stale
 
 ## [0.3.0] - 2026-10-01
 
