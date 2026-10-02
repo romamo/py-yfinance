@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [0.4.0] - 2026-10-02
 
 ### Changed
 - **Dependencies**: Bumped `pydantic-market-data` to `>=0.9.0`. `ISIN` and `FIGI` reject a bad format or checksum on construction, and quote currencies include the minor units `GBX`, `ZAC` and `ILA`
