@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [0.4.2] - 2026-10-03
 
 ### Changed
 - **Dependencies**: Bumped `pydantic-market-data` to `>=0.10.0`, whose `Price` and `OHLCV` reject NaN and infinity. `lookup --price nan` (or `inf`) now exits `2` with `ARG_ERROR`
