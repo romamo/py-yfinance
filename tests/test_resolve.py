@@ -1,6 +1,7 @@
 import unittest
 from unittest.mock import MagicMock, patch
 
+import pandas as pd
 from pydantic_market_data.models import SecurityQuery
 
 from py_yfinance.source import YFinanceDataSource
@@ -30,10 +31,7 @@ class TestYFinanceResolve(unittest.TestCase):
         mock_instance = MagicMock()
 
         # Mock history for validation
-        mock_hist = MagicMock()
-        mock_hist.empty = False
-        mock_hist.iloc = MagicMock()
-        mock_hist.iloc.__getitem__.return_value = {"Close": 150.0}
+        mock_hist = pd.DataFrame([{"Open": 150.0, "High": 150.0, "Low": 150.0, "Close": 150.0}])
         mock_instance.history.return_value = mock_hist
 
         # Mock history_metadata via internal _price_history
@@ -69,10 +67,7 @@ class TestYFinanceResolve(unittest.TestCase):
         mock_search.return_value = mock_search_instance
 
         mock_instance = MagicMock()
-        mock_hist = MagicMock()
-        mock_hist.empty = False
-        mock_hist.iloc = MagicMock()
-        mock_hist.iloc.__getitem__.return_value = {"Close": 72.5}
+        mock_hist = pd.DataFrame([{"Open": 72.5, "High": 72.5, "Low": 72.5, "Close": 72.5}])
         mock_instance.history.return_value = mock_hist
         mock_price_history = MagicMock()
         mock_price_history._history_metadata = {"currency": "GBp"}
