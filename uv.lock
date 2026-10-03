@@ -467,7 +467,7 @@ requires-dist = [
     { name = "pandas", specifier = ">=3.0.0" },
     { name = "pycountry", specifier = ">=26.2.16" },
     { name = "pydantic-market-data", specifier = ">=0.10.0" },
-    { name = "treaty", specifier = "==1.0.0rc11" },
+    { name = "treaty", specifier = ">=1.0.0rc12,<1.1" },
     { name = "yfinance", specifier = ">=1.3.0" },
 ]
 
@@ -774,11 +774,11 @@ wheels = [
 
 [[package]]
 name = "treaty"
-version = "1.0.0rc11"
+version = "1.0.0rc30"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/ea/40/c10942b7fc6c9fa9ab9632c56427fb6242a170954aa7aaf4f07453e682b4/treaty-1.0.0rc11.tar.gz", hash = "sha256:7fb3d1786bbbbd0a2011f70cbd5c3d2f30527ae52703172cc28e2c09cddc5b94", size = 490335, upload-time = "2026-10-01T15:42:55.747Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/7f/6f/a738f1e0b027ae9da64e1b2b1cb7ff888cdeaa3e673789a475405feb3f9d/treaty-1.0.0rc30.tar.gz", hash = "sha256:5480194304a32e97c42d8eb6d3474226ac69704d653910811e1023e53a5036ea", size = 564137, upload-time = "2026-10-03T15:46:48.718Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/aa/7f/69d4d1664286f48cab8d5b568b4a2a8568cc20f9985322dd4434ab8d292d/treaty-1.0.0rc11-py3-none-any.whl", hash = "sha256:e851d461f97f36ccaca2195075acfb11a95a73bf1548fb28e8a908b4f533012d", size = 494191, upload-time = "2026-10-01T15:42:54.273Z" },
+    { url = "https://files.pythonhosted.org/packages/4d/93/9ccc8eebb65ca6208b4f0399ee59bdd88782097698a8fcfc2e5f7a695fe6/treaty-1.0.0rc30-py3-none-any.whl", hash = "sha256:2f47f486dfac347c0db032c1123adc81f7463949324834aa444e9603d55afb47", size = 562435, upload-time = "2026-10-03T15:46:47.146Z" },
 ]
 
 [[package]]

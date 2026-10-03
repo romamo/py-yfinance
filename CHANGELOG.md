@@ -1,5 +1,10 @@
 # Changelog
 
+## [Unreleased]
+
+### Changed
+- **Dependencies**: `treaty>=1.0.0rc12,<1.1` instead of the exact `1.0.0rc11` pin, so py-yfinance installs alongside `py-openfigi2` 0.1.5 (as in `instrument-registry[providers]`)
+
 ## [0.4.2] - 2026-10-03
 
 ### Changed
