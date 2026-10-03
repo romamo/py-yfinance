@@ -223,7 +223,7 @@ class TestYFinanceDataSourceCoverage(unittest.TestCase):
         mock_ticker = MagicMock()
         mock_hist = MagicMock()
         mock_hist.empty = False
-        mock_hist.iloc = [{"Low": 140.0, "High": 160.0, "Close": 150.0}]
+        mock_hist.iloc = [{"Open": 150.0, "High": 160.0, "Low": 140.0, "Close": 150.0}]
         mock_ticker.history.return_value = pd.DataFrame(mock_hist.iloc)
 
         mock_price_history = MagicMock()
@@ -243,7 +243,7 @@ class TestYFinanceDataSourceCoverage(unittest.TestCase):
         mock_ticker = MagicMock()
         mock_hist = MagicMock()
         mock_hist.empty = False
-        mock_hist.iloc = [{"Low": 140.0, "High": 160.0, "Close": 150.0}]
+        mock_hist.iloc = [{"Open": 150.0, "High": 160.0, "Low": 140.0, "Close": 150.0}]
         mock_ticker.history.return_value = pd.DataFrame(mock_hist.iloc)
         mock_ticker_class.return_value = mock_ticker
 
@@ -267,7 +267,9 @@ class TestYFinanceDataSourceCoverage(unittest.TestCase):
     @patch("yfinance.Ticker")
     def test_get_price_success(self, mock_ticker_class):
         mock_ticker = MagicMock()
-        df = pd.DataFrame([{"Close": 150.0}], index=[date(2023, 1, 1)])
+        df = pd.DataFrame(
+            [{"Open": 150.0, "High": 150.0, "Low": 150.0, "Close": 150.0}], index=[date(2023, 1, 1)]
+        )
         mock_ticker.history.return_value = df
         mock_ticker_class.return_value = mock_ticker
 
@@ -320,7 +322,7 @@ class TestYFinanceDataSourceCoverage(unittest.TestCase):
         mock_ticker = MagicMock()
         mock_hist = MagicMock()
         mock_hist.empty = False
-        mock_hist.iloc = [{"Low": 0.0, "High": 0.0, "Close": 0.0}]
+        mock_hist.iloc = [{"Open": 0.0, "High": 0.0, "Low": 0.0, "Close": 0.0}]
         mock_ticker.history.return_value = pd.DataFrame(mock_hist.iloc)
         mock_ticker_class.return_value = mock_ticker
 

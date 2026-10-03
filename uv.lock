@@ -445,6 +445,7 @@ name = "py-yfinance"
 version = "0.4.0"
 source = { editable = "." }
 dependencies = [
+    { name = "pandas" },
     { name = "pycountry" },
     { name = "pydantic-market-data" },
     { name = "treaty" },
@@ -463,6 +464,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
+    { name = "pandas", specifier = ">=3.0.0" },
     { name = "pycountry", specifier = ">=26.2.16" },
     { name = "pydantic-market-data", specifier = ">=0.9.0" },
     { name = "treaty", specifier = "==1.0.0rc11" },

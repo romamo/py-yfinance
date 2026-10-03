@@ -2,8 +2,9 @@ import datetime
 import logging
 from collections.abc import Iterator
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, cast
 
+import pandas as pd
 import pycountry
 import yfinance as yf  # type: ignore
 from pydantic_extra_types.country import CountryAlpha2
@@ -46,6 +47,18 @@ _ASSET_CLASS_TO_YAHOO_QUOTE_TYPES: dict[AssetClass, frozenset[str]] = {
 }
 
 logger = logging.getLogger(__name__)
+
+_PRICE_COLUMNS = ["Open", "High", "Low", "Close"]
+
+
+def _priced_bars(hist: pd.DataFrame) -> pd.DataFrame:
+    """
+    Drop bars without prices. Yahoo can append a bar for the latest session whose
+    prices are all NaN while its volume is real, as it does for London listings.
+    """
+    if hist.empty:
+        return hist
+    return hist.dropna(subset=_PRICE_COLUMNS)
 
 
 @dataclass(frozen=True)
@@ -302,6 +315,7 @@ class YFinanceDataSource(DataSource):
         else:
             hist = t.history(period="5d")
 
+        hist = _priced_bars(hist)
         if hist.empty:
             return None
 
@@ -370,13 +384,13 @@ class YFinanceDataSource(DataSource):
         symbol_str = symbol_vo.root
         period_str = period.value
         t = yf.Ticker(symbol_str)
-        df = t.history(period=period_str)
+        df = _priced_bars(t.history(period=period_str))
 
         candles = []
         for index, row in df.iterrows():
             candles.append(
                 OHLCV(
-                    date=index,
+                    date=cast(datetime.datetime, index),
                     open=row.get("Open"),
                     high=row.get("High"),
                     low=row.get("Low"),
@@ -396,12 +410,14 @@ class YFinanceDataSource(DataSource):
         Returns None if no data is available.
         """
         start_date = end_date - datetime.timedelta(days=5)
-        hist = t.history(
-            start=start_date.isoformat(),
-            end=end_date.isoformat(),
-            interval="1d",
-            auto_adjust=False,
-            actions=False,
+        hist = _priced_bars(
+            t.history(
+                start=start_date.isoformat(),
+                end=end_date.isoformat(),
+                interval="1d",
+                auto_adjust=False,
+                actions=False,
+            )
         )
         if not hist.empty:
             return float(hist.iloc[-1]["Close"])
