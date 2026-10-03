@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [0.4.1] - 2026-10-03
 
 ### Fixed
 - **Prices**: `lookup`, `history` and `get_price` skip bars without prices. Yahoo can end a London listing's history with a bar whose prices are NaN but whose volume is real; `lookup` and `history` then failed with `INVALID_OUTPUT` and `get_price` returned NaN (#9)
