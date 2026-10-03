@@ -442,7 +442,7 @@ wheels = [
 
 [[package]]
 name = "py-yfinance"
-version = "0.4.2"
+version = "0.4.3"
 source = { editable = "." }
 dependencies = [
     { name = "pandas" },
