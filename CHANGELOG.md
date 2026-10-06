@@ -1,5 +1,13 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+- **Fundamentals**: `YahooFundamentals` returns Yahoo's company data as typed, validated models instead of yfinance's frames and dicts: `key_statistics` (price, market cap, valuation multiples, debt, cash, analyst targets), `recommendation_counts`, `annual_statements` (income, balance sheet and cash flow line items per fiscal year), `earnings_dates` (EPS estimate, reported EPS and surprise), `rating_changes` (analyst upgrades and downgrades) and `bulk_prices` (adjusted closes and volumes for many symbols in one request). A dataset Yahoo does not have, such as an ETF's income statement, comes back empty or `None`; a failed request or an unrecognised shape raises `YahooDataError`. yfinance's `Ticker` and `download` are constructor arguments, so tests and callers can pass their own
+
+### Changed
+- **Dependencies**: Declared `lxml>=6.0`, which yfinance needs for earnings dates; without it `get_earnings_dates` raises `ImportError`
+
 ## [0.4.3] - 2026-10-03
 
 ### Changed

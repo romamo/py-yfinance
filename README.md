@@ -47,6 +47,24 @@ else:
 
 Dates accept `YYYY-MM-DD`, `YYYY/MM/DD` or `YYYYMMDD`; any other string raises `ValidationError`.
 
+### Fundamentals, analyst data and bulk prices
+
+```python
+from pydantic_market_data.models import HistoryPeriod
+from py_yfinance import YahooFundamentals
+
+yahoo = YahooFundamentals()
+stats = yahoo.key_statistics("MSFT")          # price, market cap, multiples, analyst targets
+counts = yahoo.recommendation_counts("MSFT")  # None without analyst coverage
+statements = yahoo.annual_statements("MSFT")  # newest fiscal year first; empty for funds
+earnings = yahoo.earnings_dates("MSFT")       # newest first, upcoming reports included
+ratings = yahoo.rating_changes("MSFT")        # analyst upgrades and downgrades
+bulk = yahoo.bulk_prices(["MSFT", "VWRA.L"], HistoryPeriod.Y1)
+print(bulk.closes.tail(), bulk.missing)
+```
+
+Each method raises `YahooDataError` when Yahoo fails to answer or answers in an unexpected shape.
+
 ### CLI Usage
 
 #### Lookup
